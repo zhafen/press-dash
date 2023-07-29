@@ -1,8 +1,12 @@
-# Directory storing the data (if relative, relative to the dashboard dir)
+# Filetree options (if relative, relative to the dashboard dir)
 data_dir: ../test_data
+input_dirname: input
+output_dirname: output
+website_data_file_pattern: News_Report*.csv
+press_office_data_file_pattern: press_office*.xls*
 
 # What day of the year to start on
-start_date: September 1
+year_start: September 1
 
 # Groupings to use
 groupings:
