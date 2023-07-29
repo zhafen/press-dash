@@ -1,0 +1,11 @@
+# Directory storing the data (if relative, relative to the dashboard dir)
+data_dir: ../test_data
+
+# What day of the year to start on
+start_date: September 1
+
+# Groupings to use
+groupings:
+  - Research Topics
+  - Press Types
+  - Categories
