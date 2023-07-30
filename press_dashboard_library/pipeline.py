@@ -14,6 +14,7 @@ def transform( config_fp ):
     '''
 
     # Load options
+    config_fp = os.path.abspath( config_fp )
     with open( config_fp, 'r') as f:
         config = yaml.full_load( f )
 

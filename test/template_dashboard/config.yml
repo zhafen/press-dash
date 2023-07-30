@@ -11,7 +11,7 @@ groupings:
 # Filetree options
 # Paths are relative to the config fp
 # This can be left alone unless you have something in mind
-data_dir: ../test_data
+data_dir: ./data
 input_dirname: input
 output_dirname: output
 website_data_file_pattern: News_Report*.csv
