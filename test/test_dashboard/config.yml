@@ -1,0 +1,19 @@
+
+# What day of the year to start on
+year_start: September 1
+
+# What to group by
+groupings:
+  - Research Topics
+  - Press Types
+  - Categories
+
+# Filetree options
+# Paths are relative to the config fp
+# This can be left alone unless you have something in mind
+data_dir: ../test_data
+input_dirname: input
+output_dirname: output
+website_data_file_pattern: News_Report*.csv
+press_office_data_file_pattern: press_office*.xls*
+transform_nb_fp: default # Defaults to press_dashboard_library/transform.ipynb

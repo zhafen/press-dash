@@ -1,5 +1,5 @@
 # Filetree options (if relative, relative to the dashboard dir)
-data_dir: ../test_data
+data_dir: ../test/test_data
 input_dirname: input
 output_dirname: output
 website_data_file_pattern: News_Report*.csv
