@@ -1,5 +1,7 @@
 # CIERA Press Dashboard
 
+[![Installation and tests](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/python-app.yml/badge.svg)](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/python-app.yml)
+
 ## How to Run
 
 ### 1. Install
