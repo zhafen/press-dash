@@ -16,4 +16,9 @@ mkdir $DASHBOARD_DIR
 cp ./src/config.yml $DASHBOARD_DIR/
 
 # Change directory in config file
-sed -i '' 's|test_data|data|g' $DASHBOARD_DIR/config.yml
+# The if statement accounts for different bash syntax on different systems.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' 's|test_data|data|g' $DASHBOARD_DIR/config.yml
+else:
+    sed -i 's|test_data|data|g' $DASHBOARD_DIR/config.yml
+fi
