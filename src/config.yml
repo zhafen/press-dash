@@ -2,13 +2,13 @@
 # Options
 ###############################################################################
 
+# What day of the year to start on
+year_start: September 1
+
 # Location of the data relative to the config
 data_dir: ../test_data
 # Location of the figures relative to the config
 figure_dir: ./figures
-
-# What day of the year to start on
-year_start: September 1
 
 ###############################################################################
 # Advanced Options

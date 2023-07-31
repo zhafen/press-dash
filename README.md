@@ -33,6 +33,11 @@ Run the analysis scripts (i.e. the pipeline) as follows:
 * `counts/counts.*.pdf`: Figures showing article counts per year, grouped by article category, press type, and research topic.
 
 **Processed data** (inside `./data/processed`):
-* `News_Report*.press_office.csv`: Website data and press office data combined in one file.
+* `press.csv`: Website data and press office data combined in one file.
 * `counts/counts.*.csv`: Article count per-year, grouped by article category, press type, and research topic.
+
+## Customizing the Analysis
+You can customize your analysis by editing `./dashboard/config.yml`.
+Most notably, you can change what day the year starts on by changing `year_start`.
+The default start date is September 1, the start of the Northwestern financial year.
 
