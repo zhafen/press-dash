@@ -25,14 +25,14 @@ Run the analysis scripts (i.e. the pipeline) as follows:
 
 ## Description of Output
 
-Inside `./dashboard`:
-* `dashboard.ipynb`: The main notebook for the user to interact with the data via python.
+**Analysis code** (inside `./dashboard`):
+* `dashboard_YYYY-MM-DD.ipynb`: The main notebook for the user to interact with the data via python.
 * `transform_YYYY-MM-DD.ipynb`: The notebook that transformed (processed) the data.
 
-Inside `./dashboard/figures`:
+**Figures** (inside `./dashboard/figures`):
 * `counts/counts.*.pdf`: Figures showing article counts per year, grouped by article category, press type, and research topic.
 
-Inside `./data/processed`:
+**Processed data** (inside `./data/processed`):
 * `News_Report*.press_office.csv`: Website data and press office data combined in one file.
 * `counts/counts.*.csv`: Article count per-year, grouped by article category, press type, and research topic.
 
