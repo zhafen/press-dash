@@ -19,7 +19,9 @@ class TestPipeline( unittest.TestCase ):
         os.makedirs( self.dashboard_dir, exist_ok=True )
 
         # Test data output location
-        self.output_data_dir = os.path.abspath( os.path.join( self.root_dir, 'test_data', 'output' ) )
+        self.output_data_dir = os.path.abspath( os.path.join( self.root_dir, 'test_data', 'processed' ) )
+        if os.path.isdir( self.output_data_dir ):
+            shutil.rmtree( self.output_data_dir )
 
         # Copy in config
         self.config_fp = os.path.join( self.dashboard_dir, 'config.yml' )
@@ -43,5 +45,15 @@ class TestPipeline( unittest.TestCase ):
         '''Test that transform works'''
 
         pipeline.transform( self.config_fp )
+
+        assert os.path.isdir( self.output_data_dir )
+
+    ###############################################################################
+
+    def test_pipeline( self ):
+        '''Test that transform works'''
+
+        pipeline.transform( self.config_fp )
+        pipeline.dashboard( self.config_fp )
 
         assert os.path.isdir( self.output_data_dir )

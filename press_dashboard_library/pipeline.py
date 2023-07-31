@@ -7,8 +7,8 @@ import os
 import sys
 import yaml
 
-def transform( config_fp ):
-    '''Transform the data into a better format
+def execute_nb( config_fp, nb_fp_key, default_basename, include_date=True ):
+    '''Execute a notebook that's part of the pipeline.
     '''
 
     # Load options
@@ -20,29 +20,43 @@ def transform( config_fp ):
     dashboard_dir = os.path.dirname( config_fp )
     os.chdir( dashboard_dir )
     # Default to the notebook stored in the src folder
-    if config['transform_nb_fp'] == 'default':
+    if config[nb_fp_key] == 'default':
         pipeline_dir = os.path.dirname( os.path.abspath( __file__ ) )
         src_dir = os.path.join( os.path.dirname( pipeline_dir ), 'src' )
-        transform_nb_fp = os.path.join( src_dir, 'transform.ipynb' )
+        nb_fp = os.path.join( src_dir, default_basename )
     else:
-        transform_nb_fp = config['transform_nb_fp']
+        nb_fp = config[nb_fp_key]
 
     # Read and execute notebook
-    with open( transform_nb_fp ) as f:
+    with open( nb_fp ) as f:
         nb = nbformat.read( f, as_version=4 )
     ep = ExecutePreprocessor( timeout=500 )
     ep.preprocess( nb, {'metadata': {'path': os.getcwd() }} )
 
     # Get the current date and time
-    current_datetime = datetime.now()
-    datestamp = current_datetime.strftime("%Y-%m-%d")
+    script_fn = os.path.basename( nb_fp )
+    if include_date:
+        current_datetime = datetime.now()
+        datestamp = current_datetime.strftime("%Y-%m-%d")
+        script_fb, ext = os.path.splitext( script_fn )
+        executed_fp = '{}_{}{}'.format( script_fb, datestamp, ext )
+    else:
+        executed_fp = script_fn
 
     # Save executed notebook
-    script_fn = os.path.basename( transform_nb_fp )
-    script_fb, ext = os.path.splitext( script_fn )
-    executed_fp = '{}_{}{}'.format( script_fb, datestamp, ext )
     with open( executed_fp, 'w', encoding='utf-8' ) as f:
         nbformat.write( nb, f )
+
+
+def transform( config_fp ):
+    '''Transform the data into a better format
+    '''
+    execute_nb( config_fp, 'transform_nb_fp', 'transform.ipynb' )
+
+def dashboard( config_fp ):
+    '''Make the dashboard
+    '''
+    execute_nb( config_fp, 'dashboard_nb_fp', 'dashboard.ipynb' )
 
 if __name__ == '__main__':
     config_fp = sys.argv[-1]
