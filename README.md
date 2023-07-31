@@ -14,6 +14,10 @@ cd press-dashboard
 ### 2. Update the data
 
 Using your own data is as simple as updating or replacing the files in `./data/input`.
+The `press_office.xlsx` file contains information from the press office, likely manually entered.
+The `News_Report*.csv` file contains data downloaded from the CIERA website.
+
+[!WARNING]
 Ensure you do not have multiple `News_Report.csv` or `press_office.xlsx` files before running.
 
 ### 3. Execute
@@ -37,7 +41,7 @@ Run the analysis scripts (i.e. the pipeline) as follows:
 * `counts/counts.*.csv`: Article count per-year, grouped by article category, press type, and research topic.
 
 ## Customizing the Analysis
-You can customize your analysis by editing `./dashboard/config.yml`.
+You can customize the analysis by editing `./dashboard/config.yml`.
 Most notably, you can change what day the year starts on by changing `year_start`.
 The default start date is September 1, the start of the Northwestern financial year.
 
