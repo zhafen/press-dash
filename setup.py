@@ -20,6 +20,7 @@ setuptools.setup(
     install_requires = [
         'numpy',
         'pandas',
+        'openpyxl',
         'matplotlib',
         'seaborn',
         'jupyterlab',
