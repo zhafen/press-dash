@@ -17,7 +17,7 @@ Using your own data is as simple as updating or replacing the files in `./data/i
 The `press_office.xlsx` file contains information from the press office, likely manually entered.
 The `News_Report*.csv` file contains data downloaded from the CIERA website.
 
-> :warning: Ensure you do not have multiple `News_Report.csv` or `press_office.xlsx` files in `./data/input` or a random one will be selected.
+> :warning: Ensure you do not have multiple `News_Report*.csv` or `press_office.xlsx` files in `./data/input` or a random one will be selected for analysis.
 
 ### 3. Execute
 
