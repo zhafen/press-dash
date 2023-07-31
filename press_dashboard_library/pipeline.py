@@ -12,7 +12,6 @@ def execute_nb( config_fp, nb_fp_key, default_basename, include_date=True ):
     '''
 
     # Load options
-    config_fp = os.path.abspath( config_fp )
     with open( config_fp, 'r') as f:
         config = yaml.full_load( f )
 
@@ -69,7 +68,7 @@ def dashboard( config_fp ):
     execute_nb( config_fp, 'dashboard_nb_fp', 'dashboard.ipynb' )
 
 if __name__ == '__main__':
-    config_fp = sys.argv[-1]
+    config_fp = os.path.abspath( sys.argv[-1] )
 
     transform( config_fp )
     dashboard( config_fp )
