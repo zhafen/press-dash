@@ -161,3 +161,7 @@ cython_debug/
 
 .DS_Store
 .vscode/settings.json
+test_data/processed/press.csv
+test_data/processed/counts/counts.categories.csv
+test_data/processed/counts/counts.press_types.csv
+test_data/processed/counts/counts.research_topics.csv

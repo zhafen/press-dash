@@ -26,7 +26,7 @@ Run the analysis scripts (i.e. the pipeline) as follows:
 ## Description of Output
 
 **Analysis code** (inside `./dashboard`):
-* `dashboard_YYYY-MM-DD.ipynb`: The main notebook for the user to interact with the data via python.
+* `dashboard_YYYY-MM-DD.ipynb`: The main notebook for user interaction with the data via python.
 * `transform_YYYY-MM-DD.ipynb`: The notebook that transformed (processed) the data.
 
 **Figures** (inside `./dashboard/figures`):
