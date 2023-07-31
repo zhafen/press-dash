@@ -7,8 +7,6 @@ import os
 import sys
 import yaml
 
-PIPELINE_DIR = os.path.dirname( os.path.abspath( __file__ ) )
-
 def transform( config_fp ):
     '''Transform the data into a better format
     '''
@@ -21,9 +19,11 @@ def transform( config_fp ):
     # Parse filetree options
     dashboard_dir = os.path.dirname( config_fp )
     os.chdir( dashboard_dir )
-    # Default to the notebook stored in the library folder
+    # Default to the notebook stored in the src folder
     if config['transform_nb_fp'] == 'default':
-        transform_nb_fp = os.path.join( PIPELINE_DIR, 'transform.ipynb' )
+        pipeline_dir = os.path.dirname( os.path.abspath( __file__ ) )
+        src_dir = os.path.join( os.path.dirname( pipeline_dir ), 'src' )
+        transform_nb_fp = os.path.join( src_dir, 'transform.ipynb' )
     else:
         transform_nb_fp = config['transform_nb_fp']
 

@@ -5,9 +5,6 @@ import os
 import shutil
 from press_dashboard_library import pipeline
 
-TEST_DIR = os.path.dirname( __file__ )
-DASHBOARD_DIR = os.path.join( TEST_DIR, 'test_dashboard' )
-CONFIG_FP = os.path.join( DASHBOARD_DIR, 'config.yml' )
 
 ###############################################################################
 
@@ -15,23 +12,36 @@ class TestPipeline( unittest.TestCase ):
 
     def setUp( self ):
 
-        # Clean things up
-        self.output_data_dir = os.path.abspath( os.path.join( TEST_DIR, 'test_data', 'output' ) )
+        # Set up dashboard dir, located at ../test_dashboard
+        test_dir = os.path.dirname( __file__ )
+        self.root_dir = os.path.dirname( test_dir )
+        self.dashboard_dir = os.path.join( self.root_dir, 'test_dashboard' )
+        os.makedirs( self.dashboard_dir, exist_ok=True )
+
+        # Test data output location
+        self.output_data_dir = os.path.abspath( os.path.join( self.root_dir, 'test_data', 'output' ) )
+
+        # Copy in config
+        self.config_fp = os.path.join( self.dashboard_dir, 'config.yml' )
+        shutil.copy( os.path.join( self.root_dir, 'src', 'config.yml' ), self.config_fp  )
+
+    ###############################################################################
+
+    def tearDown( self ):
+
+        # Remove the test dashboard dir
+        if os.path.isdir( self.dashboard_dir ):
+            shutil.rmtree( self.dashboard_dir )
+
+        # Remove the output data dir
         if os.path.isdir( self.output_data_dir ):
             shutil.rmtree( self.output_data_dir )
 
     ###############################################################################
 
-    def tearDown( self ):
-        
-        transform_fps = glob.glob( os.path.join( DASHBOARD_DIR, 'transform_*.ipynb' ) )
-        for fp in transform_fps:
-            os.remove( fp )
-
-    ###############################################################################
-
     def test_transform( self ):
+        '''Test that transform works'''
 
-        pipeline.transform( CONFIG_FP )
+        pipeline.transform( self.config_fp )
 
         assert os.path.isdir( self.output_data_dir )
