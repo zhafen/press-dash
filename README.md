@@ -1,6 +1,6 @@
 # CIERA Press Dashboard
 
-[![Installation and tests](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/python-app.yml/badge.svg)](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/python-app.yml)
+[![Installation and Tests](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/installation_and_tests.yml/badge.svg)](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/installation_and_tests.yml)
 
 ## How to Run
 
