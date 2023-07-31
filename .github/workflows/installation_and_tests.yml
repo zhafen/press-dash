@@ -40,3 +40,6 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    - name: Run the dashboard.
+      run: |
+        ./press_dashboard_library/pipeline.py ./dashboard/config.yml
