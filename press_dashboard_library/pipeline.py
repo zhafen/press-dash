@@ -62,3 +62,4 @@ if __name__ == '__main__':
     config_fp = sys.argv[-1]
 
     transform( config_fp )
+    dashboard( config_fp )
