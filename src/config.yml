@@ -8,7 +8,7 @@ year_start: September 1
 # Location of the data relative to the config
 data_dir: ../test_data
 # Location of the figures relative to the config
-figure_dir: ./figures
+figure_dir: ../test_data/figures
 
 ###############################################################################
 # Advanced Options

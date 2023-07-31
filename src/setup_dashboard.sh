@@ -16,4 +16,4 @@ mkdir $DASHBOARD_DIR
 cp ./src/config.yml $DASHBOARD_DIR/
 
 # Change directory in config file
-sed -i '' 's|data_dir: ../test_data|data_dir: ../data|g' $DASHBOARD_DIR/config.yml
+sed -i '' 's|test_data|data|g' $DASHBOARD_DIR/config.yml

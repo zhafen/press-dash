@@ -3,8 +3,9 @@ import unittest
 import glob
 import os
 import shutil
-from press_dashboard_library import pipeline
+import yaml
 
+from press_dashboard_library import pipeline
 
 ###############################################################################
 
@@ -12,32 +13,42 @@ class TestPipeline( unittest.TestCase ):
 
     def setUp( self ):
 
-        # Set up dashboard dir, located at ../test_dashboard
-        test_dir = os.path.dirname( __file__ )
+        # Get filepath info
+        test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
-        self.dashboard_dir = os.path.join( self.root_dir, 'test_dashboard' )
-        os.makedirs( self.dashboard_dir, exist_ok=True )
 
-        # Test data output location
-        self.output_data_dir = os.path.abspath( os.path.join( self.root_dir, 'test_data', 'processed' ) )
-        if os.path.isdir( self.output_data_dir ):
-            shutil.rmtree( self.output_data_dir )
+        # Set up temporary dirs
+        self.temp_dirs = {
+            'dashboard': os.path.join( self.root_dir, 'test_dashboard' ),
+            'processed': os.path.join( self.root_dir, 'test_data', 'processed' ),
+            'figures': os.path.join( self.root_dir, 'test_data', 'figures' ),
+        }
+        for key, temp_dir in self.temp_dirs.items():
+            if os.path.isdir( temp_dir ):
+                shutil.rmtree( temp_dir )
+            os.makedirs( temp_dir )
 
         # Copy in config
-        self.config_fp = os.path.join( self.dashboard_dir, 'config.yml' )
+        self.config_fp = os.path.join( self.temp_dirs['dashboard'], 'config.yml' )
         shutil.copy( os.path.join( self.root_dir, 'src', 'config.yml' ), self.config_fp  )
 
     ###############################################################################
 
     def tearDown( self ):
 
-        # Remove the test dashboard dir
-        if os.path.isdir( self.dashboard_dir ):
-            shutil.rmtree( self.dashboard_dir )
+        for key, temp_dir in self.temp_dirs.items():
+            if os.path.isdir( temp_dir ):
+                shutil.rmtree( temp_dir )
 
-        # Remove the output data dir
-        if os.path.isdir( self.output_data_dir ):
-            shutil.rmtree( self.output_data_dir )
+    ###############################################################################
+
+    def test_parse_config( self ):
+
+        with open( './src/config.yml', "r") as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
+
+        assert config['data_dir'] == '../test_data'
+        assert config['figure_dir'] == '../test_data/figures'
 
     ###############################################################################
 
@@ -46,14 +57,18 @@ class TestPipeline( unittest.TestCase ):
 
         pipeline.transform( self.config_fp )
 
-        assert os.path.isdir( self.output_data_dir )
+        # Check that there's an output NB
+        transform_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'transform_*.ipynb' ) )
+        assert len( transform_fps ) > 0
 
     ###############################################################################
 
     def test_pipeline( self ):
-        '''Test that transform works'''
+        '''Test that dashboard is generated works'''
 
         pipeline.transform( self.config_fp )
         pipeline.dashboard( self.config_fp )
 
-        assert os.path.isdir( self.output_data_dir )
+        # Check that there's an output NB
+        dashboard_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'dashboard_*.ipynb' ) )
+        assert len( dashboard_fps ) > 0
