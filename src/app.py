@@ -69,7 +69,7 @@ categories = st.multiselect( 'Categories', counts.columns, default=list( counts.
 st.sidebar.markdown( '# Figure Tweaks' )
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
 plot_kw = {
-    'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=fig_width ),
+    'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=9. ),
     'fig_height': st.sidebar.slider( 'figure height', 0.1*fig_height, 2.*fig_height, value=fig_height ),
     'font_scale': st.sidebar.slider( 'font scale', 0.1, 2.0, value=1. ),
     'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
@@ -135,4 +135,57 @@ st.download_button(
     mime="image/pdf"
 )
 
-
+# ################################################################################
+# # Plot fractions
+# ################################################################################
+# 
+# @st.cache_data
+# def plot_fractions( group_by, categories, plot_kw ):
+#     years = counts.index
+# 
+#     # Get data
+#     total = counts.sum( axis='columns' )
+#     fractions = counts.mul( 1./total, axis='rows' )
+#     
+#     years = counts.index
+#     
+#     fig = plt.figure( figsize=( plot_kw['fig_width'], plot_kw['fig_height'] ) )
+#     ax = plt.gca()
+#     
+#     stack = ax.stackplot(
+#         years,
+#         fractions.values.transpose()
+#     )
+#     ax.set_xlim( years[0], years[-1] )
+#     ax.set_ylim( 0, 1. )
+#     ax.set_xticks( years )
+#     ax.set_ylabel( 'Fraction of Articles' )
+# 
+#     # Add labels
+#     for j, poly_j in enumerate( stack ):
+#         vertices = poly_j.get_paths()[0].vertices
+#         last_vert_ind = vertices[:,0].argmax()
+#         label_y = vertices[last_vert_ind,1]
+# 
+#         ax.annotate(
+#             text = fractions.columns[j],
+#             xy = ( 1, label_y ),
+#             xycoords = matplotlib.transforms.blended_transform_factory( ax.transAxes, ax.transData ),
+#             xytext = ( 5, 5 ),
+#             textcoords = 'offset points',
+#         )
+# 
+#     return fig
+# fig = plot_fractions( group_by, categories, plot_kw )
+# st.pyplot( fig )
+# 
+# # Add a download button for the image
+# fn = 'fractions.{}.pdf'.format( group_by )
+# img = io.BytesIO()
+# fig.savefig( img, format='pdf', bbox_inches='tight' )
+# st.download_button(
+#     label="Download Figure",
+#     data=img,
+#     file_name=fn,
+#     mime="image/pdf"
+# )
