@@ -1,4 +1,5 @@
 # Computation imports
+import io
 import numpy as np
 import os
 import glob
@@ -11,13 +12,15 @@ import streamlit as st
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.set_style( 'whitegrid' )
 
-st.set_page_config(layout='wide')
+################################################################################
+# Script Setup
+################################################################################
 
-# Config
 @st.cache_data
 def load_config():
+    '''Get the config. Do this only once.
+    '''
     with open( './config.yml', "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     return config
@@ -26,80 +29,110 @@ config = load_config()
 input_dir = os.path.join( config['data_dir'], config['input_dirname'] )
 output_dir = os.path.join( config['data_dir'], config['output_dirname'] )
 
-# Load the data
 @st.cache_data
-def load_data():
+def plotting_setup():
+    sns.set_style( 'whitegrid' )
+    plot_context = sns.plotting_context("notebook")
 
-    # Directory for figures
-    figure_dir = config['figure_dir']
-    os.makedirs( figure_dir, exist_ok=True )
+    return plot_context
+plot_context = plotting_setup()
 
-    grouping_labels = [ group_by_i.lower().replace( ' ', '_' ) for group_by_i in config['groupings'] ]
+################################################################################
+# Load data
+################################################################################
 
-    # Load the raw data
-    press_fp = os.path.join( output_dir, config['combined_filename'] )
-    df = pd.read_csv( press_fp, index_col=0 )
+st.markdown( '# Articles Per Year' )
+
+# User data selection
+group_by = st.selectbox( 'Grouping:', config['groupings'] )
+
+@st.cache_data
+def load_data( group_by ):
+
+    group_by_label = group_by.lower().replace( ' ', '_' )
 
     # Load the counts data
-    counts_dfs = {}
-    for i, group_by_i in enumerate( config['groupings'] ):
-        
-        counts_i_fp = os.path.join( output_dir, 'counts', 'counts.{}.csv'.format( grouping_labels[i] ) )
-        counts_i =  pd.read_csv( counts_i_fp, index_col=0 )
-        counts_dfs[group_by_i] = counts_i
+    counts_fp = os.path.join( output_dir, 'counts', 'counts.{}.csv'.format( group_by_label ) )
+    counts =  pd.read_csv( counts_fp, index_col=0 )
 
-    return df, counts_dfs
-
-df, counts_dfs = load_data()
-
-# Display for a particular group
-group_by_i = st.selectbox( 'Grouping:', config['groupings'] )
-counts_i = counts_dfs[group_by_i]
+    return counts, group_by_label
+counts, group_by_label = load_data( group_by )
 
 # Display for a subset of the columns
-categories = st.multiselect( 'Categories', counts_i.columns, default=list( counts_i.columns ) )
+categories = st.multiselect( 'Categories', counts.columns, default=list( counts.columns ) )
+
+################################################################################
+# Plot counts
+################################################################################
+
+# Sidebar for figure tweaks
+st.sidebar.markdown( '# Figure Tweaks' )
+fig_width, fig_height = matplotlib.rcParams['figure.figsize']
+plot_kw = {
+    'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=fig_width ),
+    'fig_height': st.sidebar.slider( 'figure height', 0.1*fig_height, 2.*fig_height, value=fig_height ),
+    'font_scale': st.sidebar.slider( 'font scale', 0.1, 2.0, value=1. ),
+    'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
+    'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
+    'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, 10, value=int(np.ceil(counts.values.max()/30.)) )
+}
 
 @st.cache_data
-def plot_counts( group_by_i, categories, counts_i ):
-    years = counts_i.index
+def plot_counts( group_by, categories, plot_kw ):
+    years = counts.index
 
-    fig = plt.figure()
+    fig = plt.figure( figsize=( plot_kw['fig_width'], plot_kw['fig_height'] ) )
     ax = plt.gca()
     for j, category_j in enumerate( categories ):
 
         ax.plot(
             years,
-            counts_i[category_j],
+            counts[category_j],
+            linewidth = 2,
+            alpha = 0.5,
         )
-    # facet_grid = sns.relplot(
-    #     counts_i,
-    #     kind = 'line',
-    #     dashes = False,
-    #     linewidth = 3,
-    #     aspect = 2,
-    #     legend = 'brief',
-    #     # legend_kws = { 'loc': 'upper left'}
-    # )
-    # facet_grid.ax.set_xlim( years[0], years[-1] )
-    # facet_grid.ax.set_ylim( 0, facet_grid.ax.get_ylim()[1] )
-    # ticks = facet_grid.ax.set_xticks( years )
-    # facet_grid.ax.set_ylabel( 'Count' )
+        ax.scatter(
+            years,
+            counts[category_j],
+            label = category_j,
+        )
 
     ymax = ax.get_ylim()[1]
 
     ax.set_xticks( years )
-    count_ticks = np.arange( 0, ymax, 1 )
+    count_ticks = np.arange( 0, ymax, plot_kw['tick_spacing'] )
     ax.set_yticks( count_ticks )
 
     ax.set_xlim( years[0], years[-1] )
     ax.set_ylim( 0, ymax )
 
+    l = ax.legend(
+        bbox_to_anchor = ( plot_kw['legend_x'], plot_kw['legend_y'] ),
+        loc = 'lower left', 
+        framealpha = 1.,
+        fontsize = plot_context['legend.fontsize'] * plot_kw['font_scale'],
+        ncol = len( categories ) // 4 + 1
+    )
+
+    ax.set_xlabel( 'Year', fontsize=plot_context['axes.labelsize'] * plot_kw['font_scale'] )
+    ax.set_ylabel( 'Count', fontsize=plot_context['axes.labelsize'] * plot_kw['font_scale'] )
+
+    ax.tick_params( labelsize=plot_context['xtick.labelsize']*plot_kw['font_scale'] )
+
     # return facet_grid
     return fig
-    
-
-fig = plot_counts( group_by_i, categories, counts_i )
-# facet_grid.fig
+fig = plot_counts( group_by, categories, plot_kw )
 st.pyplot( fig )
+
+# Add a download button for the image
+fn = 'counts.{}.pdf'.format( group_by )
+img = io.BytesIO()
+fig.savefig( img, format='pdf', bbox_inches='tight' )
+st.download_button(
+    label="Download Figure",
+    data=img,
+    file_name=fn,
+    mime="image/pdf"
+)
 
 
