@@ -12,8 +12,9 @@ fi
 # Recreate
 mkdir $DASHBOARD_DIR
 
-# Copy in config
+# Copy in config and app
 cp ./src/config.yml $DASHBOARD_DIR/
+cp ./src/st_dashboard.py $DASHBOARD_DIR/
 
 # Change directory in config file
 # The if statement accounts for different bash syntax on different systems.

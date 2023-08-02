@@ -27,5 +27,6 @@ setuptools.setup(
         'nbconvert',
         'nbformat',
         'PyYAML',
+        'streamlit',
     ],
 )
