@@ -10,7 +10,7 @@ Clone the repository, move into the folder containing the repository, and instal
 ```
 git clone git@github.com:CIERA-Northwestern/press-dashboard.git
 cd press-dashboard
-./install.sh
+./setup.sh
 ```
 
 ### 2. Update the data
