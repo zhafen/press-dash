@@ -17,7 +17,6 @@ import seaborn as sns
 # Script Setup
 ################################################################################
 
-
 @st.cache_data
 def load_config():
     '''Get the config. Do this only once.
