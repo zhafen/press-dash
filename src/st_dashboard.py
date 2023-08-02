@@ -17,10 +17,12 @@ import seaborn as sns
 # Script Setup
 ################################################################################
 
+
 @st.cache_data
 def load_config():
     '''Get the config. Do this only once.
     '''
+    os.chdir( 'src' )
     with open( './config.yml', "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     return config
