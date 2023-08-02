@@ -20,6 +20,6 @@ cp ./src/st_dashboard.py $DASHBOARD_DIR/
 # The if statement accounts for different bash syntax on different systems.
 if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' 's|test_data|data|g' $DASHBOARD_DIR/config.yml
-else:
+else
     sed -i 's|test_data|data|g' $DASHBOARD_DIR/config.yml
 fi
