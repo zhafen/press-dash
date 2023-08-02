@@ -170,8 +170,10 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
 
     # return facet_grid
     return fig
-fig = plot_counts( group_by, all_selected_columns, categories, plot_kw )
-st.pyplot( fig )
+
+with st.spinner():
+    fig = plot_counts( group_by, all_selected_columns, categories, plot_kw )
+    st.pyplot( fig )
 
 # Add a download button for the image
 fn = 'counts.{}.pdf'.format( group_by )
