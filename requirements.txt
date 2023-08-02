@@ -1,0 +1,10 @@
+numpy
+pandas
+openpyxl
+matplotlib
+seaborn
+jupyterlab
+nbconvert
+nbformat
+PyYAML
+streamlit
