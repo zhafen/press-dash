@@ -63,10 +63,12 @@ def load_original_data():
     press_fp = os.path.join( output_dir, config['combined_filename'] )
     df = pd.read_csv( press_fp, index_col=0 )
 
+    df.fillna( value='N/A', inplace=True )
+
     return df
 df = load_original_data()
 
-# @st.cache_data
+@st.cache_data
 def load_data( group_by ):
 
     remaining_groupings = copy.copy( config['groupings'] )
@@ -76,6 +78,7 @@ def load_data( group_by ):
     exploded_filename = '{}.exploded{}'.format( base, ext )
     exploded_fp = os.path.join( output_dir, exploded_filename )
     exploded = pd.read_csv( exploded_fp )
+    exploded.fillna( value='N/A', inplace=True )
 
     exploded.set_index(remaining_groupings, inplace=True)
 
@@ -87,6 +90,14 @@ exploded, remaining_groupings = load_data( group_by )
 # Filter Data
 ################################################################################
 
+st.header( 'Article Count per Year' )
+
+# Sidebar data settings
+st.sidebar.markdown( '# Data Settings' )
+data_kw = {
+    'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
+}
+
 # Select the categories to show
 all_selected_columns = []
 for i, group_by_i in enumerate( remaining_groupings ):
@@ -97,27 +108,48 @@ for i, group_by_i in enumerate( remaining_groupings ):
         st.stop()
     all_selected_columns.append( selected_columns )
 
-is_included = np.ones( len( exploded ), ).astype( bool )
-for i, group_by_i in enumerate( remaining_groupings ):
-    is_included = is_included & exploded.index.isin( all_selected_columns[i], level=i )
-selected = exploded.loc[is_included]
+cumulative = st.sidebar.checkbox( 'use cumulative count', value=False )
 
-# Get counts
-counts = selected.pivot_table( values='id', index='Year', columns=group_by, aggfunc='nunique' )
+@st.cache_data
+def filter_data( group_by, all_selected_columns, cumulative ):
+    is_included = np.ones( len( exploded ), ).astype( bool )
+    for i, group_by_i in enumerate( remaining_groupings ):
+        is_included = is_included & exploded.index.isin( all_selected_columns[i], level=i )
+    selected = exploded.loc[is_included]
 
-# Replace "None"s
-counts.fillna( value=0, inplace=True )
+    # Get counts
+    counts = selected.pivot_table( values='id', index='Year', columns=group_by, aggfunc='nunique' )
+
+    if cumulative:
+        counts = counts.cumsum( axis='rows' )
+
+    # Replace "None"s
+    counts.fillna( value=0, inplace=True )
+
+    return selected, counts
+selected, counts = filter_data( group_by, all_selected_columns, cumulative )
+
+years = counts.index
+categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
+
+@st.cache_data
+def filter_data_again( group_by, categories, all_selected_columns ):
+    subselected = selected.loc[selected[group_by].isin( categories )]
+    total = subselected.pivot_table( index='Year', values='id', aggfunc='nunique' )
+
+    selected_ids = pd.unique( subselected['id'] )
+    subselected_df = df.loc[selected_ids]
+    return subselected, total, subselected_df
+subselected, total, subselected_df = filter_data_again( group_by, categories, all_selected_columns )
+
+if cumulative:
+    total = total.cumsum()
 
 ################################################################################
 # Plot
 ################################################################################
 
-years = counts.index
-categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
-
-st.header( 'Article Count per Year' )
-
-# Sidebar for figure tweaks
+# Sidebar figure tweaks
 st.sidebar.markdown( '# Figure Settings' )
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
 plot_kw = {
@@ -127,8 +159,10 @@ plot_kw = {
     'legend_scale': st.sidebar.slider( 'legend scale', 0.1, 2.0, value=1. ), 
     'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
     'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
-    'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, 10, value=int(np.ceil(counts.values.max()/30.)) )
+    'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, 10, value=int(np.ceil(counts.values.max()/30.)) ),
 }
+
+plot_kw.update( data_kw )
 
 @st.cache_data
 def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
@@ -147,6 +181,20 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
             years,
             counts[category_j],
             label = category_j,
+        )
+    if plot_kw['show_total']:
+        ax.plot(
+            years,
+            total,
+            linewidth = 2,
+            alpha = 0.5,
+            color = 'k',
+        )
+        ax.scatter(
+            years,
+            total,
+            label = 'Total',
+            color = 'k',
         )
 
     ymax = ax.get_ylim()[1]
@@ -189,17 +237,24 @@ st.download_button(
     mime="image/pdf"
 )
 
-
 ################################################################################
 # Display Raw Data
 ################################################################################
 
-selected_ids = pd.unique( exploded.loc[is_included,'id'] )
-df_to_display = df.loc[selected_ids]
-
 st.subheader( 'Selected Data' )
-st.markdown( 'This table contains all {} selected articles.'.format( len( df_to_display ) ) )
-st.write( df_to_display )
+st.markdown( 'This table contains all {} selected articles.'.format( len( subselected_df ) ) )
+st.write( subselected_df )
+
+# Add a download button for the data
+fn = 'selected.csv'
+f = io.BytesIO()
+subselected_df.to_csv( f )
+st.download_button(
+    label="Download Selected Data",
+    data=f,
+    file_name=fn,
+    mime="text/plain"
+)
 
 ################################################################################
 # Plot counts
