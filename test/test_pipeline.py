@@ -89,3 +89,14 @@ class TestPipeline( unittest.TestCase ):
         assert len( transform_fps ) > 0
         dashboard_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'dashboard_*.ipynb' ) )
         assert len( dashboard_fps ) > 0
+
+    ###############################################################################
+
+    def test_streamlit( self ):
+
+        # Move to the root directory
+        os.chdir( self.root_dir )
+
+        subprocess.check_output([ 'streamlit', './test_dashboard/st_dashboard.py' ])
+
+

@@ -21,7 +21,14 @@ import seaborn as sns
 def load_config():
     '''Get the config. Do this only once.
     '''
-    os.chdir( 'dashboard' )
+
+    # Check if we're in the directory the script is in,
+    # which should also be the directory the config is in.
+    # If not, move into that directory
+    config_dir = os.path.dirname( __file__ )
+    if os.getcwd() != config_dir:
+        os.chdir( config_dir )
+
     with open( './config.yml', "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     return config
