@@ -17,6 +17,7 @@ import seaborn as sns
 # Script Setup
 ################################################################################
 
+os.getcwd()
 
 @st.cache_data
 def load_config():
