@@ -176,11 +176,13 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
             counts[category_j],
             linewidth = 2,
             alpha = 0.5,
+            zorder = 2,
         )
         ax.scatter(
             years,
             counts[category_j],
             label = category_j,
+            zorder = 2,
         )
     if plot_kw['show_total']:
         ax.plot(
@@ -189,12 +191,14 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
             linewidth = 2,
             alpha = 0.5,
             color = 'k',
+            zorder = 1,
         )
         ax.scatter(
             years,
             total,
             label = 'Total',
             color = 'k',
+            zorder = 1,
         )
 
     ymax = ax.get_ylim()[1]
