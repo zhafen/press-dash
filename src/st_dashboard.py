@@ -50,7 +50,7 @@ plot_context = plotting_setup()
 # Load data
 ################################################################################
 
-st.title( 'Articles Per Year for CIERA' )
+st.title( 'Overview of CIERA Articles' )
 
 # User data selection
 group_by = st.selectbox( 'Select what you want to group the articles by:', config['groupings'] )
@@ -103,7 +103,7 @@ for i, group_by_i in enumerate( remaining_groupings ):
 selected = exploded.loc[is_included]
 
 # Get counts
-counts = selected.pivot_table( values='id', index='Year', columns='Categories', aggfunc='nunique' )
+counts = selected.pivot_table( values='id', index='Year', columns=group_by, aggfunc='nunique' )
 
 # Replace "None"s
 counts.fillna( value=0, inplace=True )
@@ -115,13 +115,16 @@ counts.fillna( value=0, inplace=True )
 years = counts.index
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
 
+st.header( 'Article Count per Year' )
+
 # Sidebar for figure tweaks
-st.sidebar.markdown( '# Figure Tweaks' )
+st.sidebar.markdown( '# Figure Settings' )
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
 plot_kw = {
     'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=9. ),
     'fig_height': st.sidebar.slider( 'figure height', 0.1*fig_height, 2.*fig_height, value=fig_height ),
     'font_scale': st.sidebar.slider( 'font scale', 0.1, 2.0, value=1. ),
+    'legend_scale': st.sidebar.slider( 'legend scale', 0.1, 2.0, value=1. ), 
     'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
     'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
     'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, 10, value=int(np.ceil(counts.values.max()/30.)) )
@@ -159,7 +162,7 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
         bbox_to_anchor = ( plot_kw['legend_x'], plot_kw['legend_y'] ),
         loc = 'lower left', 
         framealpha = 1.,
-        fontsize = plot_context['legend.fontsize'] * plot_kw['font_scale'],
+        fontsize = plot_context['legend.fontsize'] * plot_kw['legend_scale'],
         ncol = len( categories ) // 4 + 1
     )
 
