@@ -22,7 +22,7 @@ import seaborn as sns
 def load_config():
     '''Get the config. Do this only once.
     '''
-    os.chdir( 'src' )
+    os.chdir( 'dashboard' )
     with open( './config.yml', "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     return config
