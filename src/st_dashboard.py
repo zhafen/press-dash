@@ -97,6 +97,7 @@ year_min, year_max = df['Year'].min(), df['Year'].max()
 data_kw = {
     'years': st.sidebar.slider( 'year range', year_min, year_max, value=[ year_min, year_max ] ),
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
+    'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
 }
 
 # Select the categories to show
@@ -109,10 +110,9 @@ for i, group_by_i in enumerate( remaining_groupings ):
         st.stop()
     all_selected_columns.append( selected_columns )
 
-cumulative = st.sidebar.checkbox( 'use cumulative count', value=False )
 
 @st.cache_data
-def filter_data( group_by, all_selected_columns, cumulative ):
+def filter_data( group_by, all_selected_columns ):
     is_included = np.ones( len( exploded ), ).astype( bool )
     for i, group_by_i in enumerate( remaining_groupings ):
         is_included = is_included & exploded.index.isin( all_selected_columns[i], level=i )
@@ -121,14 +121,11 @@ def filter_data( group_by, all_selected_columns, cumulative ):
     # Get counts
     counts = selected.pivot_table( values='id', index='Year', columns=group_by, aggfunc='nunique' )
 
-    if cumulative:
-        counts = counts.cumsum( axis='rows' )
-
     # Replace "None"s
     counts.fillna( value=0, inplace=True )
 
     return selected, counts
-selected, counts = filter_data( group_by, all_selected_columns, cumulative )
+selected, counts = filter_data( group_by, all_selected_columns )
 
 # Select the categories to show
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
@@ -144,9 +141,6 @@ def filter_data_again( group_by, categories, all_selected_columns ):
     subselected_df = df.loc[selected_ids]
     return subselected, total, subselected_df
 subselected, total, subselected_df = filter_data_again( group_by, categories, all_selected_columns )
-
-if cumulative:
-    total = total.cumsum()
 
 ################################################################################
 # Plot Counts
@@ -182,6 +176,12 @@ plot_kw.update( data_kw )
 def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
 
     years = np.arange( plot_kw['years'][0], plot_kw['years'][-1] + 1, )
+    counts_used = counts.loc[years]
+    total_used = total.loc[years]
+
+    if plot_kw['cumulative']:
+        counts_used = counts_used.cumsum( axis='rows' )
+        total_used = total_used.cumsum()
 
     sns.set_style( plot_kw['seaborn_style'] )
     plot_context = sns.plotting_context("notebook")
@@ -190,7 +190,7 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
     ax = plt.gca()
     for j, category_j in enumerate( categories ):
 
-        ys = counts.loc[years,category_j]
+        ys = counts_used[category_j]
 
         ax.plot(
             years,
@@ -210,7 +210,7 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
     if plot_kw['show_total']:
         ax.plot(
             years,
-            total,
+            total_used,
             linewidth = 2,
             alpha = 0.5,
             color = 'k',
@@ -218,7 +218,7 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
         )
         ax.scatter(
             years,
-            total,
+            total_used,
             label = 'Total',
             color = 'k',
             zorder = 1,
@@ -288,6 +288,9 @@ def plot_fractions( group_by, all_selected_columns, categories, stackplot_kw ):
     
     years = np.arange( stackplot_kw['years'][0], stackplot_kw['years'][-1] + 1, )
     counts_used = counts.loc[years,categories]
+
+    if stackplot_kw['cumulative']:
+        counts_used = counts_used.cumsum( axis='rows' )
 
     # Get data
     total = counts_used.sum( axis='columns' )
