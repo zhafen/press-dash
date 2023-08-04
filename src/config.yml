@@ -10,8 +10,8 @@ data_dir: ../test_data
 # Location of the figures relative to the config
 figure_dir: ../test_data/figures
 
-# Seaborn color palette to use
-color_palette: deep
+# Aesthetics
+color_palette: deep # Seaborn color palette to use
 
 ###############################################################################
 # Advanced Options
