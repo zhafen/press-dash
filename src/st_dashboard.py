@@ -163,17 +163,19 @@ generic_plot_kw = {
 # Sidebar figure tweaks
 st.sidebar.markdown( '## Counts Figure Settings' )
 if data_kw['cumulative']:
-    default_ymax = counts.sum( axis='rows' ).max()
+    default_ymax = counts.sum( axis='rows' ).max() * 1.05
 else:
-    default_ymax = counts.values.max()
+    default_ymax = counts.values.max() * 1.05
 default_tick_spacing = int(np.ceil(default_ymax/30.))
 max_tick_spacing = int( default_ymax )
 plot_kw = {
+    'linewidth': st.sidebar.slider( 'linewidth', 0., 10., value=2. ),
+    'marker_size': st.sidebar.slider( 'marker size', 0., 100., value=30. ),
+    'y_lim': st.sidebar.slider( 'y limits', 0., default_ymax*2., value=[0., default_ymax ] ),
+    'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, max_tick_spacing, value=default_tick_spacing ),
     'legend_scale': st.sidebar.slider( 'legend scale', 0.1, 2.0, value=1. ), 
     'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
     'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
-    'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, max_tick_spacing, value=default_tick_spacing ),
-    'y_lim': st.sidebar.slider( 'y limits', 0., default_ymax*1.2, value=[0., default_ymax ] )
 }
 
 plot_kw.update( generic_plot_kw )
@@ -202,7 +204,7 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
         ax.plot(
             years,
             ys,
-            linewidth = 2,
+            linewidth = plot_kw['linewidth'],
             alpha = 0.5,
             zorder = 2,
             color = category_colors[category_j],
@@ -213,12 +215,13 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
             label = category_j,
             zorder = 2,
             color = category_colors[category_j],
+            s = plot_kw['marker_size'],
         )
     if plot_kw['show_total']:
         ax.plot(
             years,
             total_used,
-            linewidth = 2,
+            linewidth = plot_kw['linewidth'],
             alpha = 0.5,
             color = 'k',
             zorder = 1,
@@ -229,9 +232,10 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
             label = 'Total',
             color = 'k',
             zorder = 1,
+            s = plot_kw['marker_size'],
         )
 
-    ymax = plot_kw['y_lim'][0]
+    ymax = plot_kw['y_lim'][1]
 
     ax.set_xticks( years )
     count_ticks = np.arange( 0, ymax, plot_kw['tick_spacing'] )
