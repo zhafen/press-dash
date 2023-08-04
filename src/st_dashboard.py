@@ -5,6 +5,7 @@ import numpy as np
 import os
 import glob
 import pandas as pd
+import re
 import sys
 import yaml
 import streamlit as st
@@ -100,6 +101,10 @@ data_kw = {
     'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
 }
 
+# Look for matching strings
+search_str = st.text_input( 'title search (case insensitive, but not a smart search)' )
+is_included = exploded['Title'].str.extract( '(' + search_str + ')', flags=re.IGNORECASE ).notna().values
+
 # Select the categories to show
 all_selected_columns = []
 for i, group_by_i in enumerate( remaining_groupings ):
@@ -110,10 +115,8 @@ for i, group_by_i in enumerate( remaining_groupings ):
         st.stop()
     all_selected_columns.append( selected_columns )
 
-
 @st.cache_data
-def filter_data( group_by, all_selected_columns ):
-    is_included = np.ones( len( exploded ), ).astype( bool )
+def filter_data( is_included, group_by, all_selected_columns ):
     for i, group_by_i in enumerate( remaining_groupings ):
         is_included = is_included & exploded.index.isin( all_selected_columns[i], level=i )
     selected = exploded.loc[is_included]
@@ -125,7 +128,7 @@ def filter_data( group_by, all_selected_columns ):
     counts.fillna( value=0, inplace=True )
 
     return selected, counts
-selected, counts = filter_data( group_by, all_selected_columns )
+selected, counts = filter_data( is_included, group_by, all_selected_columns )
 
 # Select the categories to show
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
@@ -185,8 +188,8 @@ plot_kw.update( data_kw )
 def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
 
     years = np.arange( plot_kw['years'][0], plot_kw['years'][-1] + 1, )
-    counts_used = counts.loc[years]
-    total_used = total.loc[years]
+    counts_used = counts.reindex( years, fill_value=0 )
+    total_used = total.reindex( years, fill_value=0 )
 
     if plot_kw['cumulative']:
         counts_used = counts_used.cumsum( axis='rows' )
@@ -298,14 +301,14 @@ def plot_fractions( group_by, all_selected_columns, categories, stackplot_kw ):
     plot_context = sns.plotting_context("notebook")
     
     years = np.arange( stackplot_kw['years'][0], stackplot_kw['years'][-1] + 1, )
-    counts_used = counts.loc[years,categories]
+    counts_used = counts.reindex( years, fill_value=0 )[categories]
 
     if stackplot_kw['cumulative']:
         counts_used = counts_used.cumsum( axis='rows' )
 
     # Get data
-    total = counts_used.sum( axis='columns' )
-    fractions = counts_used.mul( 1./total, axis='rows' )
+    total_used = counts_used.sum( axis='columns' )
+    fractions = counts_used.mul( 1./total_used, axis='rows' ).fillna( value=0. )
     
     fig = plt.figure( figsize=( stackplot_kw['fig_width'], stackplot_kw['fig_height'] ) )
     ax = plt.gca()
