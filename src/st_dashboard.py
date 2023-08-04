@@ -130,6 +130,10 @@ def filter_data( is_included, group_by, all_selected_columns ):
     return selected, counts
 selected, counts = filter_data( is_included, group_by, all_selected_columns )
 
+st.write(
+    selected.drop_duplicates( 'id', keep='first' ).replace( 'N/A', 0 ).pivot_table( values='Press Mentions', index='Year', columns=group_by, aggfunc='sum' )
+)
+
 # Select the categories to show
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
 
@@ -376,13 +380,17 @@ st.download_button(
 
 st.header( 'Selected Data' )
 with st.spinner():
-    st.markdown( 'This table contains all {} selected articles.'.format( len( subselected_df ) ) )
-    st.write( subselected_df )
+    fully_selected_df = subselected_df.loc[
+        ( data_kw['years'][0] <= subselected_df['Year'] ) &
+        ( subselected_df['Year'] <= data_kw['years'][1] )
+    ]
+    st.markdown( 'This table contains all {} selected articles.'.format( len( fully_selected_df ) ) )
+    st.write( fully_selected_df )
 
 # Add a download button for the data
 fn = 'selected.csv'
 f = io.BytesIO()
-subselected_df.to_csv( f )
+fully_selected_df.to_csv( f )
 st.download_button(
     label="Download Selected Data",
     data=f,
