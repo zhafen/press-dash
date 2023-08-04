@@ -93,7 +93,9 @@ exploded, remaining_groupings, category_colors = load_data( group_by )
 
 # Sidebar data settings
 st.sidebar.markdown( '# Data Settings' )
+year_min, year_max = df['Year'].min(), df['Year'].max()
 data_kw = {
+    'years': st.sidebar.slider( 'year range', year_min, year_max, value=[ year_min, year_max ] ),
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
 }
 
@@ -129,7 +131,6 @@ def filter_data( group_by, all_selected_columns, cumulative ):
 selected, counts = filter_data( group_by, all_selected_columns, cumulative )
 
 # Select the categories to show
-years = counts.index
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
 
 st.header( 'Article Count per Year' )
@@ -180,6 +181,8 @@ plot_kw.update( data_kw )
 @st.cache_data
 def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
 
+    years = np.arange( plot_kw['years'][0], plot_kw['years'][-1] + 1, )
+
     sns.set_style( plot_kw['seaborn_style'] )
     plot_context = sns.plotting_context("notebook")
 
@@ -187,9 +190,11 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
     ax = plt.gca()
     for j, category_j in enumerate( categories ):
 
+        ys = counts.loc[years,category_j]
+
         ax.plot(
             years,
-            counts[category_j],
+            ys,
             linewidth = 2,
             alpha = 0.5,
             zorder = 2,
@@ -197,7 +202,7 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
         )
         ax.scatter(
             years,
-            counts[category_j],
+            ys,
             label = category_j,
             zorder = 2,
             color = category_colors[category_j],
@@ -280,14 +285,13 @@ def plot_fractions( group_by, all_selected_columns, categories, stackplot_kw ):
 
     sns.set_style( stackplot_kw['seaborn_style'] )
     plot_context = sns.plotting_context("notebook")
-
-    counts_used = counts[categories]
+    
+    years = np.arange( stackplot_kw['years'][0], stackplot_kw['years'][-1] + 1, )
+    counts_used = counts.loc[years,categories]
 
     # Get data
     total = counts_used.sum( axis='columns' )
     fractions = counts_used.mul( 1./total, axis='rows' )
-    
-    years = counts_used.index
     
     fig = plt.figure( figsize=( stackplot_kw['fig_width'], stackplot_kw['fig_height'] ) )
     ax = plt.gca()
