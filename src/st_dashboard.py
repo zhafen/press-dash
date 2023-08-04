@@ -82,15 +82,19 @@ def load_data( group_by ):
 
     exploded.set_index(remaining_groupings, inplace=True)
 
-    return exploded, remaining_groupings
+    # Colors for the categories
+    color_palette = sns.color_palette( config['color_palette'] )
+    category_colors = {}
+    for i, category in enumerate( pd.unique( exploded[group_by] ) ):
+        category_colors[category] = color_palette[i]
 
-exploded, remaining_groupings = load_data( group_by )
+    return exploded, remaining_groupings, category_colors
+
+exploded, remaining_groupings, category_colors = load_data( group_by )
 
 ################################################################################
 # Filter Data
 ################################################################################
-
-st.header( 'Article Count per Year' )
 
 # Sidebar data settings
 st.sidebar.markdown( '# Data Settings' )
@@ -129,8 +133,11 @@ def filter_data( group_by, all_selected_columns, cumulative ):
     return selected, counts
 selected, counts = filter_data( group_by, all_selected_columns, cumulative )
 
+# Select the categories to show
 years = counts.index
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
+
+st.header( 'Article Count per Year' )
 
 @st.cache_data
 def filter_data_again( group_by, categories, all_selected_columns ):
@@ -146,7 +153,7 @@ if cumulative:
     total = total.cumsum()
 
 ################################################################################
-# Plot
+# Plot Counts
 ################################################################################
 
 # Sidebar figure tweaks
@@ -177,12 +184,14 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
             linewidth = 2,
             alpha = 0.5,
             zorder = 2,
+            color = category_colors[category_j],
         )
         ax.scatter(
             years,
             counts[category_j],
             label = category_j,
             zorder = 2,
+            color = category_colors[category_j],
         )
     if plot_kw['show_total']:
         ax.plot(
@@ -231,7 +240,7 @@ with st.spinner():
     st.pyplot( fig )
 
 # Add a download button for the image
-fn = 'counts.{}.pdf'.format( group_by )
+fn = 'counts.{}.pdf'.format( group_by.lower().replace( ' ', '_' ) )
 img = io.BytesIO()
 fig.savefig( img, format='pdf', bbox_inches='tight' )
 st.download_button(
@@ -240,6 +249,66 @@ st.download_button(
     file_name=fn,
     mime="image/pdf"
 )
+
+################################################################################
+# Sand/Stack Plot
+################################################################################
+
+@st.cache_data
+def plot_fractions( group_by, all_selected_columns, categories, plot_kw ):
+
+    counts_used = counts[categories]
+
+    # Get data
+    total = counts_used.sum( axis='columns' )
+    fractions = counts_used.mul( 1./total, axis='rows' )
+    
+    years = counts_used.index
+    
+    fig = plt.figure( figsize=( plot_kw['fig_width'], plot_kw['fig_height'] ) )
+    ax = plt.gca()
+    
+    stack = ax.stackplot(
+        years,
+        fractions.values.transpose(),
+        linewidth = 0,
+        colors = [ category_colors[category_j] for category_j in categories ],
+    )
+    ax.set_xlim( years[0], years[-1] )
+    ax.set_ylim( 0, 1. )
+    ax.set_xticks( years )
+    ax.set_ylabel( 'Fraction of Articles' )
+
+    # Add labels
+    for j, poly_j in enumerate( stack ):
+        vertices = poly_j.get_paths()[0].vertices
+        last_vert_ind = vertices[:,0].argmax()
+        label_y = vertices[last_vert_ind,1]
+
+        ax.annotate(
+            text = fractions.columns[j],
+            xy = ( 1, label_y ),
+            xycoords = matplotlib.transforms.blended_transform_factory( ax.transAxes, ax.transData ),
+            xytext = ( 5, 5 ),
+            textcoords = 'offset points',
+        )
+
+    return fig
+with st.spinner():
+    fig = plot_fractions( group_by, all_selected_columns, categories, plot_kw )
+    st.pyplot( fig )
+
+# Add a download button for the image
+fn = 'fractions.{}.pdf'.format( group_by.lower().replace( ' ', '_' ) )
+img = io.BytesIO()
+fig.savefig( img, format='pdf', bbox_inches='tight' )
+st.download_button(
+    label="Download Figure",
+    data=img,
+    file_name=fn,
+    mime="image/pdf"
+)
+# 
 
 ################################################################################
 # Display Raw Data
