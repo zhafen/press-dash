@@ -162,11 +162,16 @@ generic_plot_kw = {
 
 # Sidebar figure tweaks
 st.sidebar.markdown( '## Counts Figure Settings' )
+default_tick_spacing = int(np.ceil(counts.values.max()/30.))
+max_tick_spacing = 10
+if data_kw['cumulative']:
+    default_tick_spacing *= data_kw['years'][1] - data_kw['years'][0]
+    max_tick_spacing *= 3
 plot_kw = {
     'legend_scale': st.sidebar.slider( 'legend scale', 0.1, 2.0, value=1. ), 
     'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
     'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
-    'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, 10, value=int(np.ceil(counts.values.max()/30.)) ),
+    'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, max_tick_spacing, value=default_tick_spacing ),
 }
 
 plot_kw.update( generic_plot_kw )
