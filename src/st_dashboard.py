@@ -162,16 +162,18 @@ generic_plot_kw = {
 
 # Sidebar figure tweaks
 st.sidebar.markdown( '## Counts Figure Settings' )
-default_tick_spacing = int(np.ceil(counts.values.max()/30.))
-max_tick_spacing = 10
 if data_kw['cumulative']:
-    default_tick_spacing *= data_kw['years'][1] - data_kw['years'][0]
-    max_tick_spacing *= 3
+    default_ymax = counts.sum( axis='rows' ).max()
+else:
+    default_ymax = counts.values.max()
+default_tick_spacing = int(np.ceil(default_ymax/30.))
+max_tick_spacing = int( default_ymax )
 plot_kw = {
     'legend_scale': st.sidebar.slider( 'legend scale', 0.1, 2.0, value=1. ), 
     'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
     'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
     'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, max_tick_spacing, value=default_tick_spacing ),
+    'y_lim': st.sidebar.slider( 'y limits', 0., default_ymax*1.2, value=[0., default_ymax ] )
 }
 
 plot_kw.update( generic_plot_kw )
@@ -229,14 +231,14 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
             zorder = 1,
         )
 
-    ymax = ax.get_ylim()[1]
+    ymax = plot_kw['y_lim'][0]
 
     ax.set_xticks( years )
     count_ticks = np.arange( 0, ymax, plot_kw['tick_spacing'] )
     ax.set_yticks( count_ticks )
 
     ax.set_xlim( years[0], years[-1] )
-    ax.set_ylim( 0, ymax )
+    ax.set_ylim( plot_kw['y_lim'] )
 
     l = ax.legend(
         bbox_to_anchor = ( plot_kw['legend_x'], plot_kw['legend_y'] ),
