@@ -151,18 +151,13 @@ if cumulative:
 # Plot Counts
 ################################################################################
 
-# Sidebar figure tweaks
 st.sidebar.markdown( '# Figure Settings' )
+
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
-plot_kw = {
+generic_plot_kw = {
     'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=9. ),
     'fig_height': st.sidebar.slider( 'figure height', 0.1*fig_height, 2.*fig_height, value=fig_height ),
     'font_scale': st.sidebar.slider( 'font scale', 0.1, 2.0, value=1. ),
-    'legend_scale': st.sidebar.slider( 'legend scale', 0.1, 2.0, value=1. ), 
-    'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
-    'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
-    'tick_spacing': st.sidebar.slider( 'counts y tick spacing', 1, 10, value=int(np.ceil(counts.values.max()/30.)) ),
-    'horizontal_alignment': st.sidebar.selectbox( 'label alignment', [ 'right', 'left' ], index=0 ),
     'seaborn_style': st.sidebar.selectbox(
         'choose seaborn plot style',
         [ 'whitegrid', 'white', 'darkgrid', 'dark', 'ticks', ],
@@ -170,6 +165,16 @@ plot_kw = {
     ),
 }
 
+# Sidebar figure tweaks
+st.sidebar.markdown( '## Counts Figure Settings' )
+plot_kw = {
+    'legend_scale': st.sidebar.slider( 'legend scale', 0.1, 2.0, value=1. ), 
+    'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
+    'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
+    'tick_spacing': st.sidebar.slider( 'y tick spacing', 1, 10, value=int(np.ceil(counts.values.max()/30.)) ),
+}
+
+plot_kw.update( generic_plot_kw )
 plot_kw.update( data_kw )
 
 @st.cache_data
@@ -231,9 +236,9 @@ def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
         ncol = len( categories ) // 4 + 1
     )
 
+    # Labels, inc. size
     ax.set_xlabel( 'Year', fontsize=plot_context['axes.labelsize'] * plot_kw['font_scale'] )
     ax.set_ylabel( 'Count', fontsize=plot_context['axes.labelsize'] * plot_kw['font_scale'] )
-
     ax.tick_params( labelsize=plot_context['xtick.labelsize']*plot_kw['font_scale'] )
 
     # return facet_grid
@@ -258,10 +263,23 @@ st.download_button(
 # Sand/Stack Plot
 ################################################################################
 
+# Sidebar figure tweaks
+st.sidebar.markdown( '## Fractions Figure Settings' )
+fig_width, fig_height = matplotlib.rcParams['figure.figsize']
+stackplot_kw = {
+    'horizontal_alignment': st.sidebar.selectbox( 'label alignment', [ 'right', 'left' ], index=0 ),
+}
+
+stackplot_kw.update( generic_plot_kw )
+stackplot_kw.update( data_kw )
+
 st.header( 'Fraction of Tags per Year' )
 
 @st.cache_data
-def plot_fractions( group_by, all_selected_columns, categories, plot_kw ):
+def plot_fractions( group_by, all_selected_columns, categories, stackplot_kw ):
+
+    sns.set_style( stackplot_kw['seaborn_style'] )
+    plot_context = sns.plotting_context("notebook")
 
     counts_used = counts[categories]
 
@@ -271,7 +289,7 @@ def plot_fractions( group_by, all_selected_columns, categories, plot_kw ):
     
     years = counts_used.index
     
-    fig = plt.figure( figsize=( plot_kw['fig_width'], plot_kw['fig_height'] ) )
+    fig = plt.figure( figsize=( stackplot_kw['fig_width'], stackplot_kw['fig_height'] ) )
     ax = plt.gca()
     
     stack = ax.stackplot(
@@ -298,9 +316,9 @@ def plot_fractions( group_by, all_selected_columns, categories, plot_kw ):
             text = fractions.columns[j],
             xy = ( 1, label_y ),
             xycoords = matplotlib.transforms.blended_transform_factory( ax.transAxes, ax.transData ),
-            xytext = ( -5 + 10 * ( plot_kw['horizontal_alignment'] == 'left' ), 0 ),
+            xytext = ( -5 + 10 * ( stackplot_kw['horizontal_alignment'] == 'left' ), 0 ),
             va = 'center',
-            ha = plot_kw['horizontal_alignment'],
+            ha = stackplot_kw['horizontal_alignment'],
             textcoords = 'offset points',
         )
         text.set_path_effects([
@@ -308,9 +326,15 @@ def plot_fractions( group_by, all_selected_columns, categories, plot_kw ):
             path_effects.Normal(),
         ])
 
+    # Labels, inc. size
+    ax.set_xlabel( 'Year', fontsize=plot_context['axes.labelsize'] * stackplot_kw['font_scale'] )
+    ax.set_ylabel( 'Count', fontsize=plot_context['axes.labelsize'] * stackplot_kw['font_scale'] )
+    ax.tick_params( labelsize=plot_context['xtick.labelsize']*stackplot_kw['font_scale'] )
+
     return fig
+
 with st.spinner():
-    fig = plot_fractions( group_by, all_selected_columns, categories, plot_kw )
+    fig = plot_fractions( group_by, all_selected_columns, categories, stackplot_kw )
     st.pyplot( fig )
 
 # Add a download button for the image
