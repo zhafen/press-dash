@@ -12,6 +12,7 @@ import streamlit as st
 # Matplotlib imports
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as path_effects
 import seaborn as sns
 
 ################################################################################
@@ -161,6 +162,7 @@ plot_kw = {
     'legend_x': st.sidebar.slider( 'legend x', 0., 1., value=0. ),
     'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
     'tick_spacing': st.sidebar.slider( 'counts y tick spacing', 1, 10, value=int(np.ceil(counts.values.max()/30.)) ),
+    'horizontal_alignment': st.sidebar.selectbox( 'label alignment', [ 'right', 'left' ], index=0 ),
     'seaborn_style': st.sidebar.selectbox(
         'choose seaborn plot style',
         [ 'whitegrid', 'white', 'darkgrid', 'dark', 'ticks', ],
@@ -275,7 +277,7 @@ def plot_fractions( group_by, all_selected_columns, categories, plot_kw ):
     stack = ax.stackplot(
         years,
         fractions.values.transpose(),
-        linewidth = 0,
+        linewidth = 0.3,
         colors = [ category_colors[category_j] for category_j in categories ],
     )
     ax.set_xlim( years[0], years[-1] )
@@ -285,17 +287,26 @@ def plot_fractions( group_by, all_selected_columns, categories, plot_kw ):
 
     # Add labels
     for j, poly_j in enumerate( stack ):
-        vertices = poly_j.get_paths()[0].vertices
-        last_vert_ind = vertices[:,0].argmax()
-        label_y = vertices[last_vert_ind,1]
 
-        ax.annotate(
+        # The y labels are centered in the middle of the last band
+        vertices = poly_j.get_paths()[0].vertices
+        xs = vertices[:,0]
+        end_vertices = vertices[:,1][xs == xs.max()]
+        label_y = 0.5 * ( end_vertices.min() + end_vertices.max() )
+
+        text = ax.annotate(
             text = fractions.columns[j],
             xy = ( 1, label_y ),
             xycoords = matplotlib.transforms.blended_transform_factory( ax.transAxes, ax.transData ),
-            xytext = ( 5, 5 ),
+            xytext = ( -5 + 10 * ( plot_kw['horizontal_alignment'] == 'left' ), 0 ),
+            va = 'center',
+            ha = plot_kw['horizontal_alignment'],
             textcoords = 'offset points',
         )
+        text.set_path_effects([
+            path_effects.Stroke(linewidth=2.5, foreground='w'),
+            path_effects.Normal(),
+        ])
 
     return fig
 with st.spinner():
