@@ -3,10 +3,8 @@ import copy
 import io
 import numpy as np
 import os
-import glob
 import pandas as pd
 import re
-import sys
 import yaml
 import streamlit as st
 
@@ -103,10 +101,14 @@ data_kw = {
         index = 0,
         format_func = lambda x: x.lower(),
     ),
+    'count_range': None,
     'years': st.sidebar.slider( 'year range', year_min, year_max, value=[ year_min, year_max ] ),
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
     'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
 }
+if data_kw['weighting'] in alternate_weightings:
+    count_max = int( df[data_kw['weighting']].replace('N/A', 0).max() )
+    data_kw['count_range'] = st.sidebar.slider( 'count range', 0, count_max, value=[0, count_max ]  )
 
 # Look for matching strings
 search_str = st.text_input( 'title search (case insensitive; not a smart search)' )
@@ -122,15 +124,24 @@ for i, group_by_i in enumerate( remaining_groupings ):
         st.stop()
     all_selected_columns.append( selected_columns )
 @st.cache_data
-def filter_data( is_included, group_by, all_selected_columns, weighting ):
+def filter_data( is_included, group_by, all_selected_columns, weighting, count_range ):
     for i, group_by_i in enumerate( remaining_groupings ):
         is_included = is_included & exploded.index.isin( all_selected_columns[i], level=i )
     selected = exploded.loc[is_included]
 
-    if weighting in [ 'Press Mentions', 'People Reached' ]:
+    if weighting in alternate_weightings:
+
+        # Filter on count
         selected_for_sum = selected.copy()
-        # Replace N/A w/ zeros for counting
         selected_for_sum[weighting].replace( 'N/A', 0, inplace=True )
+        is_in_count_range = (
+            ( count_range[0] <= selected_for_sum[weighting] ) &
+            ( selected_for_sum[weighting] <= count_range[1] )
+        )
+        selected_for_sum = selected_for_sum.loc[is_in_count_range]
+        selected = selected.loc[is_in_count_range]
+
+        # Replace N/A w/ zeros for counting
         def aggfunc( df_agg ):
             df_agg = df_agg.drop_duplicates( 'id', keep='first' )
             return df_agg[weighting].sum()
@@ -148,7 +159,7 @@ def filter_data( is_included, group_by, all_selected_columns, weighting ):
     counts.fillna( value=0, inplace=True )
 
     return selected, counts
-selected, counts = filter_data( is_included, group_by, all_selected_columns, data_kw['weighting'] )
+selected, counts = filter_data( is_included, group_by, all_selected_columns, data_kw['weighting'], data_kw['count_range'] )
 
 # Select the categories to show
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
