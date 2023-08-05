@@ -141,9 +141,8 @@ def filter_data( is_included, group_by, all_selected_columns, weighting, count_r
         selected_for_sum = selected_for_sum.loc[is_in_count_range]
         selected = selected.loc[is_in_count_range]
 
-        # Replace N/A w/ zeros for counting
         def aggfunc( df_agg ):
-            df_agg = df_agg.drop_duplicates( 'id', keep='first' )
+            df_agg = df_agg.drop_duplicates( subset='id', keep='first' )
             return df_agg[weighting].sum()
         counts = selected_for_sum.pivot_table(
             values=[weighting,'id'],
