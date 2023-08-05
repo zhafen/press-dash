@@ -96,14 +96,15 @@ exploded, remaining_groupings, category_colors = load_data( group_by )
 st.sidebar.markdown( '# Data Settings' )
 year_min, year_max = df['Year'].min(), df['Year'].max()
 data_kw = {
+    'weighting': st.sidebar.selectbox( 'count type', [ 'article count', 'people reached', 'press mentions' ], index=1 ),
     'years': st.sidebar.slider( 'year range', year_min, year_max, value=[ year_min, year_max ] ),
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
     'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
 }
 
 # Look for matching strings
-search_str = st.text_input( 'title search (case insensitive, but not a smart search)' )
-is_included = exploded['Title'].str.extract( '(' + search_str + ')', flags=re.IGNORECASE ).notna().values
+search_str = st.text_input( 'title search (case insensitive; not a smart search)' )
+is_included = exploded['Title'].str.extract( '(' + search_str + ')', flags=re.IGNORECASE ).notna().values[:,0]
 
 # Select the categories to show
 all_selected_columns = []
@@ -114,25 +115,37 @@ for i, group_by_i in enumerate( remaining_groupings ):
         st.error( 'You must select at least one option.' )
         st.stop()
     all_selected_columns.append( selected_columns )
-
 @st.cache_data
-def filter_data( is_included, group_by, all_selected_columns ):
+def filter_data( is_included, group_by, all_selected_columns, weighting ):
     for i, group_by_i in enumerate( remaining_groupings ):
         is_included = is_included & exploded.index.isin( all_selected_columns[i], level=i )
     selected = exploded.loc[is_included]
 
-    # Get counts
-    counts = selected.pivot_table( values='id', index='Year', columns=group_by, aggfunc='nunique' )
+    if weighting in [ 'Press Mentions', 'People Reached' ]:
+        selected_for_sum = selected.copy()
+        # Replace N/A w/ zeros for counting
+        selected_for_sum[weighting].replace( 'N/A', 0, inplace=True )
+        def aggfunc( df_agg ):
+            df_agg = df_agg.drop_duplicates( 'id', keep='first' )
+            return df_agg[weighting].sum()
+        counts = selected_for_sum.pivot_table(
+            values=[weighting,'id'],
+            index='Year',
+            columns=group_by,
+            aggfunc=aggfunc
+        )
+    else:
+        # Get counts
+        counts = selected.pivot_table( values='id', index='Year', columns=group_by, aggfunc='nunique' )
 
     # Replace "None"s
     counts.fillna( value=0, inplace=True )
 
     return selected, counts
-selected, counts = filter_data( is_included, group_by, all_selected_columns )
+selected, counts = filter_data( is_included, group_by, all_selected_columns, data_kw['weighting'] )
 
-st.write(
-    selected.drop_duplicates( 'id', keep='first' ).replace( 'N/A', 0 ).pivot_table( values='Press Mentions', index='Year', columns=group_by, aggfunc='sum' )
-)
+# DEBUG
+st.write( counts )
 
 # Select the categories to show
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
