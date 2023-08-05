@@ -93,10 +93,16 @@ exploded, remaining_groupings, category_colors = load_data( group_by )
 ################################################################################
 
 # Sidebar data settings
+alternate_weightings = [ 'People Reached', 'Press Mentions' ]
 st.sidebar.markdown( '# Data Settings' )
 year_min, year_max = df['Year'].min(), df['Year'].max()
 data_kw = {
-    'weighting': st.sidebar.selectbox( 'count type', [ 'article count', 'people reached', 'press mentions' ], index=1 ),
+    'weighting': st.sidebar.selectbox(
+        'count type',
+        [ 'article count', ] + alternate_weightings,
+        index = 0,
+        format_func = lambda x: x.lower(),
+    ),
     'years': st.sidebar.slider( 'year range', year_min, year_max, value=[ year_min, year_max ] ),
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
     'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
@@ -143,9 +149,6 @@ def filter_data( is_included, group_by, all_selected_columns, weighting ):
 
     return selected, counts
 selected, counts = filter_data( is_included, group_by, all_selected_columns, data_kw['weighting'] )
-
-# DEBUG
-st.write( counts )
 
 # Select the categories to show
 categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
