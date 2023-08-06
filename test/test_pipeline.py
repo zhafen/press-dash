@@ -33,6 +33,10 @@ class TestPipeline( unittest.TestCase ):
         self.config_fp = os.path.join( self.temp_dirs['dashboard'], 'config.yml' )
         shutil.copy( os.path.join( self.root_dir, 'src', 'config.yml' ), self.config_fp  )
 
+        # Set up news data fp
+        self.news_data_fp = os.path.join( self.root_dir, 'test_data', 'input', 'News_Report_2023-07-25.csv' )
+        self.dup_news_data_fp = self.news_data_fp.replace( '07-25', 'null-null' )
+
     ###############################################################################
 
     def tearDown( self ):
@@ -40,6 +44,9 @@ class TestPipeline( unittest.TestCase ):
         for key, temp_dir in self.temp_dirs.items():
             if os.path.isdir( temp_dir ):
                 shutil.rmtree( temp_dir )
+
+        if os.path.exists( self.dup_news_data_fp ):
+            os.remove( self.dup_news_data_fp )
 
     ###############################################################################
 
@@ -55,6 +62,20 @@ class TestPipeline( unittest.TestCase ):
 
     def test_transform( self ):
         '''Test that transform works'''
+
+        pipeline.transform( self.config_fp )
+
+        # Check that there's an output NB
+        transform_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'transform_*.ipynb' ) )
+        assert len( transform_fps ) > 0
+
+    ###############################################################################
+
+    def test_transform_extra_files( self ):
+        '''Test that transform works'''
+
+        # Make an extra copy
+        shutil.copy( self.news_data_fp, self.dup_news_data_fp )
 
         pipeline.transform( self.config_fp )
 
