@@ -24,9 +24,6 @@ st.set_page_config(layout='wide')
 
 config = st_lib.load_config( __file__ )
 
-input_dir = os.path.join( config['data_dir'], config['input_dirname'] )
-output_dir = os.path.join( config['data_dir'], config['output_dirname'] )
-
 ################################################################################
 # Load data
 ################################################################################
@@ -38,32 +35,9 @@ group_by = st.selectbox( 'Select what you want to group the articles by:', confi
 
 st.header( 'Data Filters' )
 
-press_fp = os.path.join( output_dir, config['combined_filename'] )
-df = st_lib.load_original_data( press_fp )
+df = st_lib.load_original_data( config )
 
-@st.cache_data
-def load_data( group_by ):
-
-    remaining_groupings = copy.copy( config['groupings'] )
-    remaining_groupings.remove( group_by )
-
-    base, ext = os.path.splitext( config['combined_filename'] )
-    exploded_filename = '{}.exploded{}'.format( base, ext )
-    exploded_fp = os.path.join( output_dir, exploded_filename )
-    exploded = pd.read_csv( exploded_fp )
-    exploded.fillna( value='N/A', inplace=True )
-
-    exploded.set_index(remaining_groupings, inplace=True)
-
-    # Colors for the categories
-    color_palette = sns.color_palette( config['color_palette'] )
-    category_colors = {}
-    for i, category in enumerate( pd.unique( exploded[group_by] ) ):
-        category_colors[category] = color_palette[i]
-
-    return exploded, remaining_groupings, category_colors
-
-exploded, remaining_groupings, category_colors = load_data( group_by )
+exploded, remaining_groupings, category_colors = st_lib.load_exploded_data( config, group_by )
 
 ################################################################################
 # Filter Data
