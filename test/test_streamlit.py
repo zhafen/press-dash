@@ -28,3 +28,10 @@ class TestDashboard( unittest.TestCase ):
         assert config['color_palette'] == 'deep'
 
     ###############################################################################
+
+    def test_load_original_data( self ):
+
+        press_fp = os.path.join( self.processed_dir, 'press.csv' )
+        df = st_lib.load_original_data( press_fp )
+
+        assert df.size > 0

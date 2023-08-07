@@ -22,7 +22,7 @@ from press_dashboard_library import streamlit as st_lib
 
 st.set_page_config(layout='wide')
 
-config = st_lib.load_config()
+config = st_lib.load_config( __file__ )
 
 input_dir = os.path.join( config['data_dir'], config['input_dirname'] )
 output_dir = os.path.join( config['data_dir'], config['output_dirname'] )
@@ -38,16 +38,8 @@ group_by = st.selectbox( 'Select what you want to group the articles by:', confi
 
 st.header( 'Data Filters' )
 
-@st.cache_data
-def load_original_data():
-
-    press_fp = os.path.join( output_dir, config['combined_filename'] )
-    df = pd.read_csv( press_fp, index_col=0 )
-
-    df.fillna( value='N/A', inplace=True )
-
-    return df
-df = load_original_data()
+press_fp = os.path.join( output_dir, config['combined_filename'] )
+df = st_lib.load_original_data( press_fp )
 
 @st.cache_data
 def load_data( group_by ):

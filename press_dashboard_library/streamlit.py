@@ -20,3 +20,14 @@ def load_config( dashboard_fp ):
     with open( './config.yml', "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     return config
+
+################################################################################
+
+@st.cache_data
+def load_original_data( press_fp ):
+
+    df = pd.read_csv( press_fp, index_col=0 )
+
+    df.fillna( value='N/A', inplace=True )
+
+    return df
