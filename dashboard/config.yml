@@ -10,6 +10,9 @@ data_dir: ../data
 # Location of the figures relative to the config
 figure_dir: ../data/figures
 
+# Aesthetics
+color_palette: deep # Seaborn color palette to use
+
 ###############################################################################
 # Advanced Options
 ###############################################################################
