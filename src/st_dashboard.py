@@ -14,28 +14,15 @@ import matplotlib.pyplot as plt
 import matplotlib.patheffects as path_effects
 import seaborn as sns
 
+from press_dashboard_library import streamlit as st_lib
+
 ################################################################################
 # Script Setup
 ################################################################################
 
 st.set_page_config(layout='wide')
 
-@st.cache_data
-def load_config():
-    '''Get the config. Do this only once.
-    '''
-
-    # Check if we're in the directory the script is in,
-    # which should also be the directory the config is in.
-    # If not, move into that directory
-    config_dir = os.path.dirname( __file__ )
-    if os.getcwd() != config_dir:
-        os.chdir( config_dir )
-
-    with open( './config.yml', "r") as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
-    return config
-config = load_config()
+config = st_lib.load_config()
 
 input_dir = os.path.join( config['data_dir'], config['input_dirname'] )
 output_dir = os.path.join( config['data_dir'], config['output_dirname'] )

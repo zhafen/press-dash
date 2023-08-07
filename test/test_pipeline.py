@@ -41,7 +41,9 @@ class TestPipeline( unittest.TestCase ):
 
     def tearDown( self ):
 
-        for key, temp_dir in self.temp_dirs.items():
+        # Remove dashboard and figures temp dirs
+        for key in [ 'dashboard', 'figures' ]:
+            temp_dir = self.temp_dirs[key]
             if os.path.isdir( temp_dir ):
                 shutil.rmtree( temp_dir )
 
