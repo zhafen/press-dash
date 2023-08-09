@@ -69,6 +69,8 @@ for column in [ 'Year', 'Press Mentions', 'People Reached' ]:
     column_min, column_max = int( df[column].min() ), int( df[column].max() )
     range_filters[column] = st.sidebar.slider( column.lower(), column_min, column_max, value=[ column_min, column_max ] )
 
+data_kw.update( range_filters )
+
 # Look for matching strings
 search_str = st.text_input( 'Title search (case insensitive; not a smart search)' )
 
@@ -86,7 +88,7 @@ for group_by_i in config['groupings']:
 selected = st_lib.filter_data( exploded, selected_groups, search_str, range_filters )
 
 # Retrieve counts
-counts = st_lib.count( selected, group_by, data_kw['weighting'] )
+counts, total = st_lib.count( selected, group_by, data_kw['weighting'] )
 categories = counts.columns
 
 st.header( 'Article Count per Year' )
@@ -133,7 +135,7 @@ plot_kw.update( generic_plot_kw )
 plot_kw.update( data_kw )
 
 with st.spinner():
-    fig = st_lib.plot_counts( counts, plot_kw )
+    fig = st_lib.plot_counts( counts, total, plot_kw )
     st.pyplot( fig )
 
 # Add a download button for the image
