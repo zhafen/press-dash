@@ -96,7 +96,7 @@ class TestDashboard( unittest.TestCase ):
         selected = self.exploded
         weighting = 'Article Count'
 
-        counts = st_lib.count( selected, self.group_by, weighting )
+        counts, total = st_lib.count( selected, self.group_by, weighting )
 
         test_year = 2015
         test_group = 'Galaxies & Cosmology'
@@ -108,6 +108,15 @@ class TestDashboard( unittest.TestCase ):
         ) )
         assert counts.loc[test_year,test_group] == expected
 
+        # Total count
+        test_year = 2015
+        expected = len( pd.unique(
+            selected.loc[(
+                ( selected['Year'] == test_year )
+            ),'id']
+        ) )
+        assert total.loc[test_year][0] == expected
+
     ###############################################################################
 
     def test_count_press_mentions( self ):
@@ -115,7 +124,7 @@ class TestDashboard( unittest.TestCase ):
         selected = self.exploded
         weighting = 'Press Mentions'
 
-        counts = st_lib.count( selected, self.group_by, weighting )
+        counts, total = st_lib.count( selected, self.group_by, weighting )
 
         test_year = 2015
         test_group = 'Galaxies & Cosmology'
@@ -127,6 +136,16 @@ class TestDashboard( unittest.TestCase ):
         subselected.replace( 'N/A', 0, inplace=True )
         expected = subselected['Press Mentions'].sum()
         assert counts.loc[test_year,test_group] == expected
+
+        # Total count
+        test_year = 2015
+        subselected = selected.loc[(
+            ( selected['Year'] == test_year )
+        )]
+        subselected.drop_duplicates( subset='id', inplace=True )
+        subselected.replace( 'N/A', 0, inplace=True )
+        expected = subselected['Press Mentions'].sum()
+        assert total.loc[test_year][0] == expected
 
     ###############################################################################
 

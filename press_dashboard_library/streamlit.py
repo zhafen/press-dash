@@ -104,6 +104,7 @@ def count( selected, group_by, weighting ):
     # Nice simple case
     if weighting == 'Article Count':
         counts = selected.pivot_table( index='Year', columns=group_by, values='id', aggfunc='nunique' )
+        total = selected.pivot_table( index='Year', values='id', aggfunc='nunique' )
 
     # More-complicated alternative
     else:
@@ -116,21 +117,26 @@ def count( selected, group_by, weighting ):
             columns=group_by,
             aggfunc=aggfunc
         )
+        total = selected.pivot_table(
+            values=[weighting,'id'],
+            index='Year',
+            aggfunc=aggfunc
+        )
 
     # Replace the Nones with zeroes
     counts = counts.fillna( 0 )
+    total = total.fillna( 0 )
 
-    return counts
+    return counts, total
 
 ################################################################################
 
 @st.cache_data
-def plot_counts( counts, plot_kw ):
+def plot_counts( counts, total, plot_kw ):
 
     if plot_kw['cumulative']:
         counts = counts.cumsum( axis='rows' )
-        # DEBUG
-        # total = total.cumsum()
+        total = total.cumsum()
 
     years = counts.index
     categories = counts.columns
