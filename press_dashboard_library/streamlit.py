@@ -38,6 +38,7 @@ def load_original_data( config ):
     press_fp = os.path.join( output_dir, config['combined_filename'] )
     df = pd.read_csv( press_fp, index_col=0 )
 
+    df[['Press Mentions', 'People Reached']] = df[['Press Mentions','People Reached']].fillna( value=0 )
     df.fillna( value='N/A', inplace=True )
 
     return df

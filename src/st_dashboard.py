@@ -49,7 +49,6 @@ exploded, remaining_groupings, category_colors = st_lib.load_exploded_data( conf
 # Sidebar data settings
 alternate_weightings = [ 'People Reached', 'Press Mentions' ]
 st.sidebar.markdown( '# Data Settings' )
-year_min, year_max = df['Year'].min(), df['Year'].max()
 data_kw = {
     'weighting': st.sidebar.selectbox(
         'count type',
@@ -58,13 +57,17 @@ data_kw = {
         format_func = lambda x: x.lower(),
     ),
     'count_range': None,
-    'years': st.sidebar.slider( 'year range', year_min, year_max, value=[ year_min, year_max ] ),
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
     'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
 }
 if data_kw['weighting'] in alternate_weightings:
     count_max = int( df[data_kw['weighting']].replace('N/A', 0).max() )
-    data_kw['count_range'] = st.sidebar.slider( 'count range', 0, count_max, value=[0, count_max ]  )
+
+# Setup range filters
+range_filters = {}
+for column in [ 'Year', 'Press Mentions', 'People Reached' ]:
+    column_min, column_max = int( df[column].min() ), int( df[column].max() )
+    range_filters[column] = st.sidebar.slider( column.lower(), column_min, column_max, value=[ column_min, column_max ] )
 
 # Look for matching strings
 search_str = st.text_input( 'Title search (case insensitive; not a smart search)' )
@@ -80,7 +83,7 @@ for group_by_i in config['groupings']:
     selected_groups[group_by_i] = selected_groups_i
 
 # Retrieve selected data
-selected = st_lib.filter_data( exploded, selected_groups, search_str )
+selected = st_lib.filter_data( exploded, selected_groups, search_str, range_filters )
 
 # Retrieve counts
 counts = st_lib.count( selected, group_by, data_kw['weighting'] )
@@ -182,17 +185,14 @@ st.download_button(
 
 st.header( 'Selected Data' )
 with st.spinner():
-    fully_selected_df = subselected_df.loc[
-        ( data_kw['years'][0] <= subselected_df['Year'] ) &
-        ( subselected_df['Year'] <= data_kw['years'][1] )
-    ]
-    st.markdown( 'This table contains all {} selected articles.'.format( len( fully_selected_df ) ) )
-    st.write( fully_selected_df )
+    selected_entries = df.loc[pd.unique(selected['id'])]
+    st.markdown( 'This table contains all {} selected articles.'.format( len( selected_entries ) ) )
+    st.write( selected_entries )
 
 # Add a download button for the data
 fn = 'selected.csv'
 f = io.BytesIO()
-fully_selected_df.to_csv( f )
+selected_entries.to_csv( f )
 st.download_button(
     label="Download Selected Data",
     data=f,
