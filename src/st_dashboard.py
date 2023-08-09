@@ -25,7 +25,7 @@ importlib.reload( st_lib )
 
 st.set_page_config(layout='wide')
 
-config = st_lib.load_config( __file__ )
+config = st.cache_data( st_lib.load_config )( __file__ )
 
 ################################################################################
 # Load data
@@ -38,9 +38,9 @@ group_by = st.selectbox( 'Select what you want to group the articles by:', confi
 
 st.header( 'Data Filters' )
 
-df = st_lib.load_original_data( config )
+df = st.cache_data( st_lib.load_original_data )( config )
 
-exploded, remaining_groupings, category_colors = st_lib.load_exploded_data( config, group_by )
+exploded, remaining_groupings, category_colors = st.cache_data( st_lib.load_exploded_data )( config, group_by )
 
 ################################################################################
 # Filter and Count Data
@@ -85,10 +85,10 @@ for group_by_i in config['groupings']:
     selected_groups[group_by_i] = selected_groups_i
 
 # Retrieve selected data
-selected = st_lib.filter_data( exploded, selected_groups, search_str, range_filters )
+selected = st.cache_data( st_lib.filter_data )( exploded, selected_groups, search_str, range_filters )
 
 # Retrieve counts
-counts, total = st_lib.count( selected, group_by, data_kw['weighting'] )
+counts, total = st.cache_data( st_lib.count )( selected, group_by, data_kw['weighting'] )
 categories = counts.columns
 
 st.header( 'Article Count per Year' )
@@ -135,7 +135,7 @@ plot_kw.update( generic_plot_kw )
 plot_kw.update( data_kw )
 
 with st.spinner():
-    fig = st_lib.plot_counts( counts, total, plot_kw )
+    fig = st.cache_data( st_lib.plot_counts )( counts, total, plot_kw )
     st.pyplot( fig )
 
 # Add a download button for the image
@@ -166,7 +166,7 @@ stackplot_kw.update( data_kw )
 st.header( 'Fraction of Tags per Year' )
 
 with st.spinner():
-    fig = st_lib.plot_fractions( counts, stackplot_kw )
+    fig = st.cache_data( st_lib.plot_fractions )( counts, stackplot_kw )
     st.pyplot( fig )
 
 # Add a download button for the image

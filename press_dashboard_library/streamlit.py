@@ -13,7 +13,7 @@ import seaborn as sns
 
 ################################################################################
 
-@st.cache_data
+# @st.cache_data
 def load_config( dashboard_fp ):
     '''Get the config. Do this only once.
     '''
@@ -31,7 +31,7 @@ def load_config( dashboard_fp ):
 
 ################################################################################
 
-@st.cache_data
+# @st.cache_data
 def load_original_data( config ):
 
     output_dir = os.path.join( config['data_dir'], config['output_dirname'] )
@@ -45,7 +45,7 @@ def load_original_data( config ):
 
 ################################################################################
 
-@st.cache_data
+# @st.cache_data
 def load_exploded_data( config, group_by ):
 
     remaining_groupings = copy.copy( config['groupings'] )
@@ -74,7 +74,7 @@ def load_exploded_data( config, group_by ):
 
 ################################################################################
 
-@st.cache_data
+# @st.cache_data
 def filter_data( exploded, selected_groups, search_str, range_filters ):
     '''Filter the data shown.'''
 
@@ -97,7 +97,7 @@ def filter_data( exploded, selected_groups, search_str, range_filters ):
 
 ################################################################################
 
-@st.cache_data
+# @st.cache_data
 def count( selected, group_by, weighting ):
     '''Count up stats.'''
 
@@ -131,7 +131,7 @@ def count( selected, group_by, weighting ):
 
 ################################################################################
 
-@st.cache_data
+# @st.cache_data
 def plot_counts( counts, total, plot_kw ):
 
     if plot_kw['cumulative']:
@@ -211,7 +211,7 @@ def plot_counts( counts, total, plot_kw ):
 
 ################################################################################
 
-@st.cache_data
+# @st.cache_data
 def plot_fractions( counts, stackplot_kw ):
 
     sns.set_style( stackplot_kw['seaborn_style'] )
