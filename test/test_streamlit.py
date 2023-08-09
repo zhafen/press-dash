@@ -154,7 +154,7 @@ class TestDashboard( unittest.TestCase ):
         selected = self.exploded
         weighting = 'Press Mentions'
 
-        counts = st_lib.count( selected, self.group_by, weighting )
+        counts, total = st_lib.count( selected, self.group_by, weighting )
 
         # Non-zero test
         test_year = 2021
@@ -168,3 +168,13 @@ class TestDashboard( unittest.TestCase ):
         expected = subselected['Press Mentions'].sum()
         assert expected > 0
         assert counts.loc[test_year,test_group] == expected
+
+        # Total count
+        test_year = 2021
+        subselected = selected.loc[(
+            ( selected['Year'] == test_year )
+        )]
+        subselected.drop_duplicates( subset='id', inplace=True )
+        subselected.replace( 'N/A', 0, inplace=True )
+        expected = subselected['Press Mentions'].sum()
+        assert total.loc[test_year][0] == expected
