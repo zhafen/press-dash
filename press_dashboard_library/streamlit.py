@@ -8,6 +8,7 @@ import yaml
 
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as path_effects
 import seaborn as sns
 
 ################################################################################
@@ -121,7 +122,7 @@ def plot_counts( counts, plot_kw ):
     if plot_kw['cumulative']:
         counts = counts.cumsum( axis='rows' )
         # DEBUG
-        # total_used = total_used.cumsum()
+        # total = total.cumsum()
 
     years = counts.index
     categories = counts.columns
@@ -154,7 +155,7 @@ def plot_counts( counts, plot_kw ):
     if plot_kw['show_total']:
         ax.plot(
             years,
-            total_used,
+            total,
             linewidth = plot_kw['linewidth'],
             alpha = 0.5,
             color = 'k',
@@ -162,7 +163,7 @@ def plot_counts( counts, plot_kw ):
         )
         ax.scatter(
             years,
-            total_used,
+            total,
             label = 'Total',
             color = 'k',
             zorder = 1,
@@ -192,4 +193,66 @@ def plot_counts( counts, plot_kw ):
     ax.tick_params( labelsize=plot_context['xtick.labelsize']*plot_kw['font_scale'] )
 
     # return facet_grid
+    return fig
+
+################################################################################
+
+@st.cache_data
+def plot_fractions( counts, stackplot_kw ):
+
+    sns.set_style( stackplot_kw['seaborn_style'] )
+    plot_context = sns.plotting_context("notebook")
+
+    if stackplot_kw['cumulative']:
+        counts = counts.cumsum( axis='rows' )
+
+    years = counts.index
+    categories = counts.columns
+
+    # Get data
+    total = counts.sum( axis='columns' )
+    fractions = counts.mul( 1./total, axis='rows' ).fillna( value=0. )
+    
+    fig = plt.figure( figsize=( stackplot_kw['fig_width'], stackplot_kw['fig_height'] ) )
+    ax = plt.gca()
+    
+    stack = ax.stackplot(
+        years,
+        fractions.values.transpose(),
+        linewidth = 0.3,
+        colors = [ stackplot_kw['category_colors'][category_j] for category_j in categories ],
+    )
+    ax.set_xlim( years[0], years[-1] )
+    ax.set_ylim( 0, 1. )
+    ax.set_xticks( years )
+    ax.set_ylabel( 'Fraction of Articles' )
+
+    # Add labels
+    for j, poly_j in enumerate( stack ):
+
+        # The y labels are centered in the middle of the last band
+        vertices = poly_j.get_paths()[0].vertices
+        xs = vertices[:,0]
+        end_vertices = vertices[:,1][xs == xs.max()]
+        label_y = 0.5 * ( end_vertices.min() + end_vertices.max() )
+
+        text = ax.annotate(
+            text = fractions.columns[j],
+            xy = ( 1, label_y ),
+            xycoords = matplotlib.transforms.blended_transform_factory( ax.transAxes, ax.transData ),
+            xytext = ( -5 + 10 * ( stackplot_kw['horizontal_alignment'] == 'left' ), 0 ),
+            va = 'center',
+            ha = stackplot_kw['horizontal_alignment'],
+            textcoords = 'offset points',
+        )
+        text.set_path_effects([
+            path_effects.Stroke(linewidth=2.5, foreground='w'),
+            path_effects.Normal(),
+        ])
+
+    # Labels, inc. size
+    ax.set_xlabel( 'Year', fontsize=plot_context['axes.labelsize'] * stackplot_kw['font_scale'] )
+    ax.set_ylabel( 'Count', fontsize=plot_context['axes.labelsize'] * stackplot_kw['font_scale'] )
+    ax.tick_params( labelsize=plot_context['xtick.labelsize']*stackplot_kw['font_scale'] )
+
     return fig
