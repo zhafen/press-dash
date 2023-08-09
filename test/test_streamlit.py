@@ -143,4 +143,3 @@ class TestDashboard( unittest.TestCase ):
         expected = subselected['Press Mentions'].sum()
         assert expected > 0
         assert counts.loc[test_year,test_group] == expected
-

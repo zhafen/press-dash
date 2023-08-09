@@ -16,6 +16,10 @@ import seaborn as sns
 
 from press_dashboard_library import streamlit as st_lib
 
+# DEBUG
+import importlib
+importlib.reload( st_lib )
+
 ################################################################################
 # Script Setup
 ################################################################################
@@ -40,7 +44,7 @@ df = st_lib.load_original_data( config )
 exploded, remaining_groupings, category_colors = st_lib.load_exploded_data( config, group_by )
 
 ################################################################################
-# Filter Data
+# Filter and Count Data
 ################################################################################
 
 # Sidebar data settings
@@ -50,7 +54,7 @@ year_min, year_max = df['Year'].min(), df['Year'].max()
 data_kw = {
     'weighting': st.sidebar.selectbox(
         'count type',
-        [ 'article count', ] + alternate_weightings,
+        [ 'Article Count', ] + alternate_weightings,
         index = 0,
         format_func = lambda x: x.lower(),
     ),
@@ -64,69 +68,26 @@ if data_kw['weighting'] in alternate_weightings:
     data_kw['count_range'] = st.sidebar.slider( 'count range', 0, count_max, value=[0, count_max ]  )
 
 # Look for matching strings
-search_str = st.text_input( 'title search (case insensitive; not a smart search)' )
-is_included = exploded['Title'].str.extract( '(' + search_str + ')', flags=re.IGNORECASE ).notna().values[:,0]
+search_str = st.text_input( 'Title search (case insensitive; not a smart search)' )
 
-# Select the categories to show
-all_selected_columns = []
-for i, group_by_i in enumerate( remaining_groupings ):
-    possible_columns = pd.unique( exploded.index.get_level_values(i) )
-    selected_columns = st.multiselect( group_by_i, possible_columns, default=possible_columns )
-    if len( selected_columns ) == 0:
+# User selection for the categories to show
+selected_groups = {}
+for group_by_i in config['groupings']:
+    possible_columns = pd.unique( exploded[group_by_i] )
+    selected_groups_i = st.multiselect( group_by_i, possible_columns, default=possible_columns )
+    if len( selected_groups_i ) == 0:
         st.error( 'You must select at least one option.' )
         st.stop()
-    all_selected_columns.append( selected_columns )
-@st.cache_data
-def filter_data( is_included, group_by, all_selected_columns, weighting, count_range ):
-    for i, group_by_i in enumerate( remaining_groupings ):
-        is_included = is_included & exploded.index.isin( all_selected_columns[i], level=i )
-    selected = exploded.loc[is_included]
+    selected_groups[group_by_i] = selected_groups_i
 
-    if weighting in alternate_weightings:
+# Retrieve selected data
+selected = st_lib.filter_data( exploded, selected_groups, search_str )
 
-        # Filter on count
-        selected_for_sum = selected.copy()
-        selected_for_sum[weighting].replace( 'N/A', 0, inplace=True )
-        is_in_count_range = (
-            ( count_range[0] <= selected_for_sum[weighting] ) &
-            ( selected_for_sum[weighting] <= count_range[1] )
-        )
-        selected_for_sum = selected_for_sum.loc[is_in_count_range]
-        selected = selected.loc[is_in_count_range]
-
-        def aggfunc( df_agg ):
-            df_agg = df_agg.drop_duplicates( 'id', keep='first' )
-            return df_agg[weighting].sum()
-        counts = selected_for_sum.pivot_table(
-            values=[weighting,'id'],
-            index='Year',
-            columns=group_by,
-            aggfunc=aggfunc
-        )
-    else:
-        # Get counts
-        counts = selected.pivot_table( values='id', index='Year', columns=group_by, aggfunc='nunique' )
-
-    # Replace "None"s
-    counts.fillna( value=0, inplace=True )
-
-    return selected, counts
-selected, counts = filter_data( is_included, group_by, all_selected_columns, data_kw['weighting'], data_kw['count_range'] )
-
-# Select the categories to show
-categories = st.multiselect( group_by, counts.columns, default=list(counts.columns) )
+# Retrieve counts
+counts = st_lib.count( selected, group_by, data_kw['weighting'] )
+categories = counts.columns
 
 st.header( 'Article Count per Year' )
-
-@st.cache_data
-def filter_data_again( group_by, categories, all_selected_columns ):
-    subselected = selected.loc[selected[group_by].isin( categories )]
-    total = subselected.pivot_table( index='Year', values='id', aggfunc='nunique' )
-
-    selected_ids = pd.unique( subselected['id'] )
-    subselected_df = df.loc[selected_ids]
-    return subselected, total, subselected_df
-subselected, total, subselected_df = filter_data_again( group_by, categories, all_selected_columns )
 
 ################################################################################
 # Plot Counts
@@ -144,6 +105,7 @@ generic_plot_kw = {
         [ 'whitegrid', 'white', 'darkgrid', 'dark', 'ticks', ],
         index = 0,
     ),
+    'category_colors': category_colors,
 }
 
 # Sidebar figure tweaks
@@ -152,6 +114,7 @@ if data_kw['cumulative']:
     default_ymax = counts.sum( axis='rows' ).max() * 1.05
 else:
     default_ymax = counts.values.max() * 1.05
+
 default_tick_spacing = int(np.ceil(default_ymax/30.))
 max_tick_spacing = int( default_ymax )
 plot_kw = {
@@ -167,87 +130,8 @@ plot_kw = {
 plot_kw.update( generic_plot_kw )
 plot_kw.update( data_kw )
 
-@st.cache_data
-def plot_counts( group_by, all_selected_columns, categories, plot_kw ):
-
-    years = np.arange( plot_kw['years'][0], plot_kw['years'][-1] + 1, )
-    counts_used = counts.reindex( years, fill_value=0 )
-    total_used = total.reindex( years, fill_value=0 )
-
-    if plot_kw['cumulative']:
-        counts_used = counts_used.cumsum( axis='rows' )
-        total_used = total_used.cumsum()
-
-    sns.set_style( plot_kw['seaborn_style'] )
-    plot_context = sns.plotting_context("notebook")
-
-    fig = plt.figure( figsize=( plot_kw['fig_width'], plot_kw['fig_height'] ) )
-    ax = plt.gca()
-    for j, category_j in enumerate( categories ):
-
-        ys = counts_used[category_j]
-
-        ax.plot(
-            years,
-            ys,
-            linewidth = plot_kw['linewidth'],
-            alpha = 0.5,
-            zorder = 2,
-            color = category_colors[category_j],
-        )
-        ax.scatter(
-            years,
-            ys,
-            label = category_j,
-            zorder = 2,
-            color = category_colors[category_j],
-            s = plot_kw['marker_size'],
-        )
-    if plot_kw['show_total']:
-        ax.plot(
-            years,
-            total_used,
-            linewidth = plot_kw['linewidth'],
-            alpha = 0.5,
-            color = 'k',
-            zorder = 1,
-        )
-        ax.scatter(
-            years,
-            total_used,
-            label = 'Total',
-            color = 'k',
-            zorder = 1,
-            s = plot_kw['marker_size'],
-        )
-
-    ymax = plot_kw['y_lim'][1]
-
-    ax.set_xticks( years )
-    count_ticks = np.arange( 0, ymax, plot_kw['tick_spacing'] )
-    ax.set_yticks( count_ticks )
-
-    ax.set_xlim( years[0], years[-1] )
-    ax.set_ylim( plot_kw['y_lim'] )
-
-    l = ax.legend(
-        bbox_to_anchor = ( plot_kw['legend_x'], plot_kw['legend_y'] ),
-        loc = 'lower left', 
-        framealpha = 1.,
-        fontsize = plot_context['legend.fontsize'] * plot_kw['legend_scale'],
-        ncol = len( categories ) // 4 + 1
-    )
-
-    # Labels, inc. size
-    ax.set_xlabel( 'Year', fontsize=plot_context['axes.labelsize'] * plot_kw['font_scale'] )
-    ax.set_ylabel( 'Count', fontsize=plot_context['axes.labelsize'] * plot_kw['font_scale'] )
-    ax.tick_params( labelsize=plot_context['xtick.labelsize']*plot_kw['font_scale'] )
-
-    # return facet_grid
-    return fig
-
 with st.spinner():
-    fig = plot_counts( group_by, all_selected_columns, categories, plot_kw )
+    fig = st_lib.plot_counts( counts, plot_kw )
     st.pyplot( fig )
 
 # Add a download button for the image
@@ -278,7 +162,7 @@ stackplot_kw.update( data_kw )
 st.header( 'Fraction of Tags per Year' )
 
 @st.cache_data
-def plot_fractions( group_by, all_selected_columns, categories, stackplot_kw ):
+def plot_fractions( group_by, selected_groups, categories, stackplot_kw ):
 
     sns.set_style( stackplot_kw['seaborn_style'] )
     plot_context = sns.plotting_context("notebook")
@@ -338,7 +222,7 @@ def plot_fractions( group_by, all_selected_columns, categories, stackplot_kw ):
     return fig
 
 with st.spinner():
-    fig = plot_fractions( group_by, all_selected_columns, categories, stackplot_kw )
+    fig = plot_fractions( group_by, selected_groups, categories, stackplot_kw )
     st.pyplot( fig )
 
 # Add a download button for the image

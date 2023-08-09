@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 import os
 import pandas as pd
 import re
@@ -68,6 +69,7 @@ def load_exploded_data( config, group_by ):
 
 ################################################################################
 
+@st.cache_data
 def filter_data( exploded, selected_groups, search_str ):
     '''Filter the data shown.'''
 
@@ -83,6 +85,7 @@ def filter_data( exploded, selected_groups, search_str ):
 
 ################################################################################
 
+@st.cache_data
 def count( selected, group_by, weighting ):
     '''Count up stats.'''
 
@@ -90,19 +93,103 @@ def count( selected, group_by, weighting ):
     if weighting == 'Article Count':
         counts = selected.pivot_table( index='Year', columns=group_by, values='id', aggfunc='nunique' )
 
-        return counts
+    # More-complicated alternative
+    else:
+        # Handle NaNs
+        selected[weighting] = selected[weighting].replace( 'N/A', 0 )
 
-    # Handle NaNs
-    selected[weighting] = selected[weighting].replace( 'N/A', 0 )
+        def aggfunc( df_agg ):
+            df_agg = df_agg.drop_duplicates( 'id', keep='first' )
+            return df_agg[weighting].sum()
+        counts = selected.pivot_table(
+            values=[weighting,'id'],
+            index='Year',
+            columns=group_by,
+            aggfunc=aggfunc
+        )
 
-    def aggfunc( df_agg ):
-        df_agg = df_agg.drop_duplicates( 'id', keep='first' )
-        return df_agg[weighting].sum()
-    counts = selected.pivot_table(
-        values=[weighting,'id'],
-        index='Year',
-        columns=group_by,
-        aggfunc=aggfunc
-    )
+    # Replace the Nones with zeroes
+    counts = counts.fillna( 0 )
 
     return counts
+
+################################################################################
+
+@st.cache_data
+def plot_counts( counts, plot_kw ):
+
+    if plot_kw['cumulative']:
+        counts = counts.cumsum( axis='rows' )
+        # DEBUG
+        # total_used = total_used.cumsum()
+
+    years = counts.index
+    categories = counts.columns
+
+    sns.set_style( plot_kw['seaborn_style'] )
+    plot_context = sns.plotting_context("notebook")
+
+    fig = plt.figure( figsize=( plot_kw['fig_width'], plot_kw['fig_height'] ) )
+    ax = plt.gca()
+    for j, category_j in enumerate( categories ):
+
+        ys = counts[category_j]
+
+        ax.plot(
+            years,
+            ys,
+            linewidth = plot_kw['linewidth'],
+            alpha = 0.5,
+            zorder = 2,
+            color = plot_kw['category_colors'][category_j],
+        )
+        ax.scatter(
+            years,
+            ys,
+            label = category_j,
+            zorder = 2,
+            color = plot_kw['category_colors'][category_j],
+            s = plot_kw['marker_size'],
+        )
+    if plot_kw['show_total']:
+        ax.plot(
+            years,
+            total_used,
+            linewidth = plot_kw['linewidth'],
+            alpha = 0.5,
+            color = 'k',
+            zorder = 1,
+        )
+        ax.scatter(
+            years,
+            total_used,
+            label = 'Total',
+            color = 'k',
+            zorder = 1,
+            s = plot_kw['marker_size'],
+        )
+
+    ymax = plot_kw['y_lim'][1]
+
+    ax.set_xticks( years )
+    count_ticks = np.arange( 0, ymax, plot_kw['tick_spacing'] )
+    ax.set_yticks( count_ticks )
+
+    ax.set_xlim( years[0], years[-1] )
+    ax.set_ylim( plot_kw['y_lim'] )
+
+    l = ax.legend(
+        bbox_to_anchor = ( plot_kw['legend_x'], plot_kw['legend_y'] ),
+        loc = 'lower left', 
+        framealpha = 1.,
+        fontsize = plot_context['legend.fontsize'] * plot_kw['legend_scale'],
+        ncol = len( categories ) // 4 + 1
+    )
+
+    # Labels, inc. size
+    ax.set_xlabel( 'Year', fontsize=plot_context['axes.labelsize'] * plot_kw['font_scale'] )
+    ax.set_ylabel( 'Count', fontsize=plot_context['axes.labelsize'] * plot_kw['font_scale'] )
+    ax.tick_params( labelsize=plot_context['xtick.labelsize']*plot_kw['font_scale'] )
+
+    # return facet_grid
+    return fig
