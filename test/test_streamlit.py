@@ -3,6 +3,7 @@ import unittest
 import glob
 import numpy as np
 import os
+import pandas as pd
 import shutil
 import subprocess
 import yaml
@@ -82,4 +83,23 @@ class TestDashboard( unittest.TestCase ):
         assert np.invert( selected['Press Types'] == 'External Press' ).sum() == 0
         assert np.invert( ( selected['Categories'] == 'Science' ) | ( selected['Categories'] == 'Event' ) ).sum() == 0
     
+    ###############################################################################
+
+    def test_count( self ):
+
+        selected = self.exploded
+        weighting = 'article_count'
+
+        counts = st_lib.count( selected, self.group_by, weighting )
+
+        test_year = 2015
+        test_group = 'Galaxies & Cosmology'
+        expected = len( pd.unique(
+            selected.loc[(
+                ( selected['Year'] == test_year ) &
+                ( selected[self.group_by] == test_group )
+            ),'id']
+        ) )
+        assert counts.loc[test_year,test_group] == expected
+
 

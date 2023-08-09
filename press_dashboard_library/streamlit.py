@@ -68,15 +68,24 @@ def load_exploded_data( config, group_by ):
 
 ################################################################################
 
-def filter_data( exploded, all_selected_groups, search_str ):
+def filter_data( exploded, selected_groups, search_str ):
     '''Filter the data shown.'''
 
     # Search filter
     is_included = exploded['Title'].str.extract( '(' + search_str + ')', flags=re.IGNORECASE ).notna().values[:,0]
 
     # Categories filter
-    for group_by_i, groups in all_selected_groups.items():
+    for group_by_i, groups in selected_groups.items():
         is_included = is_included & exploded[group_by_i].isin( groups )
     selected = exploded.loc[is_included]
 
     return selected
+
+################################################################################
+
+def count( selected, group_by, weighting ):
+    '''Count up stats.'''
+
+    counts = selected.pivot_table( index='Year', columns=group_by, values='id', aggfunc='nunique' )
+
+    return counts
