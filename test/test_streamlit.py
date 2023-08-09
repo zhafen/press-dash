@@ -76,12 +76,18 @@ class TestDashboard( unittest.TestCase ):
             'Press Types': [ 'External Press', ],
             'Categories': [ 'Science', 'Event', ],
         }
+        range_filters = {
+            'Year': [ 2016, 2023 ], 
+            'Press Mentions': [ 0, 10 ], 
+        }
 
-        selected = st_lib.filter_data( self.exploded, all_selected_columns, search_str, )
+        selected = st_lib.filter_data( self.exploded, all_selected_columns, search_str, range_filters )
 
         assert np.invert( selected['Research Topics'] == 'Galaxies & Cosmology' ).sum() == 0
         assert np.invert( selected['Press Types'] == 'External Press' ).sum() == 0
         assert np.invert( ( selected['Categories'] == 'Science' ) | ( selected['Categories'] == 'Event' ) ).sum() == 0
+        assert np.invert( ( 2016 <= selected['Year'] ) & ( selected['Year'] <= 2023 ) ).sum() == 0
+        assert np.invert( ( 0 <= selected['Press Mentions'] ) & ( selected['Press Mentions'] <= 10 ) ).sum() == 0
     
     ###############################################################################
 

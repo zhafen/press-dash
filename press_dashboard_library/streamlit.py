@@ -55,6 +55,9 @@ def load_exploded_data( config, group_by ):
     output_dir = os.path.join( config['data_dir'], config['output_dirname'] )
     exploded_fp = os.path.join( output_dir, exploded_filename )
     exploded = pd.read_csv( exploded_fp )
+
+    # Handle NaNs and such
+    exploded[['Press Mentions', 'People Reached']] = exploded[['Press Mentions','People Reached']].fillna( value=0 )
     exploded.fillna( value='N/A', inplace=True )
 
     # DEBUG
@@ -71,7 +74,7 @@ def load_exploded_data( config, group_by ):
 ################################################################################
 
 @st.cache_data
-def filter_data( exploded, selected_groups, search_str ):
+def filter_data( exploded, selected_groups, search_str, range_filters ):
     '''Filter the data shown.'''
 
     # Search filter
@@ -80,8 +83,15 @@ def filter_data( exploded, selected_groups, search_str ):
     # Categories filter
     for group_by_i, groups in selected_groups.items():
         is_included = is_included & exploded[group_by_i].isin( groups )
-    selected = exploded.loc[is_included]
 
+    # Range filters
+    for column, column_range in range_filters.items():
+        is_included = is_included & (
+            ( column_range[0] <= exploded[column] ) &
+            ( exploded[column] <= column_range[1] )
+        )
+
+    selected = exploded.loc[is_included]
     return selected
 
 ################################################################################
@@ -96,9 +106,6 @@ def count( selected, group_by, weighting ):
 
     # More-complicated alternative
     else:
-        # Handle NaNs
-        selected[weighting] = selected[weighting].replace( 'N/A', 0 )
-
         def aggfunc( df_agg ):
             df_agg = df_agg.drop_duplicates( 'id', keep='first' )
             return df_agg[weighting].sum()
