@@ -88,7 +88,7 @@ class TestDashboard( unittest.TestCase ):
     def test_count( self ):
 
         selected = self.exploded
-        weighting = 'article_count'
+        weighting = 'Article Count'
 
         counts = st_lib.count( selected, self.group_by, weighting )
 
@@ -102,4 +102,45 @@ class TestDashboard( unittest.TestCase ):
         ) )
         assert counts.loc[test_year,test_group] == expected
 
+    ###############################################################################
+
+    def test_count_press_mentions( self ):
+
+        selected = self.exploded
+        weighting = 'Press Mentions'
+
+        counts = st_lib.count( selected, self.group_by, weighting )
+
+        test_year = 2015
+        test_group = 'Galaxies & Cosmology'
+        subselected = selected.loc[(
+            ( selected['Year'] == test_year ) &
+            ( selected[self.group_by] == test_group )
+        )]
+        subselected.drop_duplicates( subset='id', inplace=True )
+        subselected.replace( 'N/A', 0, inplace=True )
+        expected = subselected['Press Mentions'].sum()
+        assert counts.loc[test_year,test_group] == expected
+
+    ###############################################################################
+
+    def test_count_press_mentions_nonzero( self ):
+
+        selected = self.exploded
+        weighting = 'Press Mentions'
+
+        counts = st_lib.count( selected, self.group_by, weighting )
+
+        # Non-zero test
+        test_year = 2021
+        test_group = 'Gravitational Waves & Multi-Messenger Astronomy'
+        subselected = selected.loc[(
+            ( selected['Year'] == test_year ) &
+            ( selected[self.group_by] == test_group )
+        )]
+        subselected.drop_duplicates( subset='id', inplace=True )
+        subselected.replace( 'N/A', 0, inplace=True )
+        expected = subselected['Press Mentions'].sum()
+        assert expected > 0
+        assert counts.loc[test_year,test_group] == expected
 

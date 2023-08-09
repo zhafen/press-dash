@@ -86,6 +86,23 @@ def filter_data( exploded, selected_groups, search_str ):
 def count( selected, group_by, weighting ):
     '''Count up stats.'''
 
-    counts = selected.pivot_table( index='Year', columns=group_by, values='id', aggfunc='nunique' )
+    # Nice simple case
+    if weighting == 'Article Count':
+        counts = selected.pivot_table( index='Year', columns=group_by, values='id', aggfunc='nunique' )
+
+        return counts
+
+    # Handle NaNs
+    selected[weighting] = selected[weighting].replace( 'N/A', 0 )
+
+    def aggfunc( df_agg ):
+        df_agg = df_agg.drop_duplicates( 'id', keep='first' )
+        return df_agg[weighting].sum()
+    counts = selected.pivot_table(
+        values=[weighting,'id'],
+        index='Year',
+        columns=group_by,
+        aggfunc=aggfunc
+    )
 
     return counts
