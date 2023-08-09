@@ -1,6 +1,7 @@
 import unittest
 
 import glob
+import numpy as np
 import os
 import shutil
 import subprocess
@@ -59,7 +60,26 @@ class TestDashboard( unittest.TestCase ):
         self.root_dir = os.path.dirname( test_dir )
         self.processed_dir = os.path.join( self.root_dir, 'test_data', 'processed' )
 
+        self.group_by = 'Research Topics'
         self.config = st_lib.load_config( os.path.join( self.root_dir, 'src', 'st_dashboard.py' ) )
-        press_fp = os.path.join( self.processed_dir, 'press.csv' )
-        self.df = st_lib.load_original_data( press_fp )
+        self.df = st_lib.load_original_data( self.config )
+        self.exploded, self.remaining_groupings, self.category_colors = st_lib.load_exploded_data( self.config, self.group_by )
+
+    ###############################################################################
+
+    def test_filter_data( self ):
+
+        search_str = ''
+        all_selected_columns = {
+            'Research Topics': [ 'Galaxies & Cosmology', ],
+            'Press Types': [ 'External Press', ],
+            'Categories': [ 'Science', 'Event', ],
+        }
+
+        selected = st_lib.filter_data( self.exploded, all_selected_columns, search_str, )
+
+        assert np.invert( selected['Research Topics'] == 'Galaxies & Cosmology' ).sum() == 0
+        assert np.invert( selected['Press Types'] == 'External Press' ).sum() == 0
+        assert np.invert( ( selected['Categories'] == 'Science' ) | ( selected['Categories'] == 'Event' ) ).sum() == 0
+    
 
