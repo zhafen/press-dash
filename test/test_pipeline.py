@@ -109,8 +109,11 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
+    @unittest.skip( "This attempts to use nbconvert's --to notebook functionality, but that function does not work with a changing working directory." )
     def test_transform_execute_as_nb( self ):
-        '''Test that transform works'''
+        '''Test that transform works when executing the notebook directly.
+        This would be nice because it would create the script that was run, and show the results alongside it in NB format.
+        '''
 
         # Move to the config directory
         os.chdir( self.test_data_dir )
