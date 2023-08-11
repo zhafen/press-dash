@@ -39,7 +39,7 @@ class TestPipeline( unittest.TestCase ):
     def tearDown( self ):
 
         # Remove dashboard and figures temp dirs
-        for key in [ 'processed_data_dir', 'figure_dir' ]:
+        for key in [ 'processed_data_dir', 'figure_dir', 'logs_dir' ]:
             temp_dir = self.temp_dirs[key]
             if os.path.isdir( temp_dir ):
                 shutil.rmtree( temp_dir )
@@ -62,13 +62,63 @@ class TestPipeline( unittest.TestCase ):
     ###############################################################################
 
     def test_transform( self ):
+        '''Test that the transform works.'''
+
+        # Move to the config directory
+        nb_fp = os.path.join( self.root_dir, 'src', 'transform.ipynb' )
+        script_fn_base = 'transform.{}.test'.format( self.timestamp )
+        command = ' '.join( (
+            'jupyter',
+            'nbconvert',
+            '--to script',
+            nb_fp,
+            '--output={}'.format( script_fn_base ),
+            '--output-dir={}'.format( self.temp_dirs['logs_dir'] ),
+        ) )
+        conversion_subprocess_output = subprocess.run(
+            command,
+            shell = True,
+            capture_output = True,
+            cwd = self.test_data_dir,
+        )
+        assert conversion_subprocess_output.returncode == 0
+
+        execution_subprocess_output = subprocess.run(
+            'python {}.py'.format( os.path.join( self.temp_dirs['logs_dir'], script_fn_base )),
+            shell = True,
+            capture_output = True,
+            cwd = self.test_data_dir,
+        )
+        assert execution_subprocess_output.returncode == 0
+
+        # Check that there are output files
+        output_files = [
+            ( 'counts', 'counts.categories.csv', ),
+            ( 'counts', 'counts.press_types.csv', ),
+            ( 'counts', 'counts.research_topics.csv', ),
+            ( 'press.csv', ),
+            ( 'press.exploded.csv', ),
+        ]
+        for output_file in output_files:
+            output_fp = os.path.join( self.temp_dirs['processed_data_dir'], *output_file )
+            assert os.path.isfile( output_fp )
+
+        # Check that there's an output NB in the logs
+        transform_fps = glob.glob( os.path.join( self.temp_dirs['logs_dir'], 'transform*.py' ) )
+        assert len( transform_fps ) > 0
+
+    ###############################################################################
+
+    def test_transform_execute_as_nb( self ):
         '''Test that transform works'''
 
         # Move to the config directory
-        os.chdir( os.path.dirname( self.config_fp ) )
+        os.chdir( self.test_data_dir )
 
         nb_fp = os.path.join( self.root_dir, 'src', 'transform.ipynb' )
         command = ' '.join( (
+            'cd',
+            '{};'.format( self.test_data_dir ),
             'jupyter',
             'nbconvert',
             '--to notebook',
@@ -78,12 +128,12 @@ class TestPipeline( unittest.TestCase ):
         ) )
         subprocess_output = subprocess.run(
             command,
-            shell=True,
-            capture_output=True,
+            shell = True,
+            capture_output = True,
+            cwd = os.path.relpath( self.test_data_dir ),
         )
 
         # Ensure it ran successfully
-        # os.system( command )
         assert subprocess_output.returncode == 0
 
         # Check that there are output files
