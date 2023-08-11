@@ -6,9 +6,9 @@
 year_start: September 1
 
 # Location of the data relative to the config
-data_dir: ../test_data
+data_dir: ../test_data/test_data_raw_only
 # Location of the figures relative to the config
-figure_dir: ../test_data/figures
+figure_dir: ../test_data/test_data_raw_only/figures
 
 # Aesthetics
 color_palette: deep # Seaborn color palette to use
