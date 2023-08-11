@@ -16,25 +16,22 @@ class TestPipeline( unittest.TestCase ):
 
         # Get filepath info
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
+        self.config_fp = os.path.join( test_dir, 'config_raw_only.yml' )
         self.root_dir = os.path.dirname( test_dir )
+        self.test_data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_raw_only' )
 
         # Set up temporary dirs
         self.temp_dirs = {
-            'dashboard': os.path.join( self.root_dir, 'test_dashboard' ),
-            'processed': os.path.join( self.root_dir, 'test_data', 'processed' ),
-            'figures': os.path.join( self.root_dir, 'test_data', 'figures' ),
+            'processed_data_dir': os.path.join( self.test_data_dir, 'processed_data' ),
+            'figure_dir': os.path.join( self.test_data_dir, 'figures' ),
+            'logs_dir': os.path.join( self.test_data_dir, 'logs' ),
         }
         for key, temp_dir in self.temp_dirs.items():
             if os.path.isdir( temp_dir ):
                 shutil.rmtree( temp_dir )
-            os.makedirs( temp_dir )
-
-        # Copy in config
-        self.config_fp = os.path.join( self.temp_dirs['dashboard'], 'config.yml' )
-        shutil.copy( os.path.join( self.root_dir, 'src', 'config.yml' ), self.config_fp  )
 
         # Set up news data fp
-        self.news_data_fp = os.path.join( self.root_dir, 'test_data', 'input', 'News_Report_2023-07-25.csv' )
+        self.news_data_fp = os.path.join( self.test_data_dir, 'raw_data', 'News_Report_2023-07-25.csv' )
         self.dup_news_data_fp = self.news_data_fp.replace( '07-25', 'null-null' )
 
     ###############################################################################
@@ -42,7 +39,7 @@ class TestPipeline( unittest.TestCase ):
     def tearDown( self ):
 
         # Remove dashboard and figures temp dirs
-        for key in [ 'dashboard', 'figures' ]:
+        for key in self.temp_dirs.keys():
             temp_dir = self.temp_dirs[key]
             if os.path.isdir( temp_dir ):
                 shutil.rmtree( temp_dir )
@@ -54,11 +51,13 @@ class TestPipeline( unittest.TestCase ):
 
     def test_parse_config( self ):
 
-        with open( './src/config.yml', "r") as f:
+        with open( self.config_fp, "r") as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
 
-        assert config['data_dir'] == '../test_data'
-        assert config['figure_dir'] == '../test_data/figures'
+        # Paths are relative to the config
+        os.chdir( os.path.dirname( self.config_fp ) )
+        assert config['data_dir'] == os.path.relpath( self.test_data_dir )
+        assert config['figure_dir'] == os.path.relpath( self.temp_dirs['figure_dir'] )
 
     ###############################################################################
 
@@ -67,22 +66,46 @@ class TestPipeline( unittest.TestCase ):
 
         pipeline.transform( self.config_fp )
 
-        # Check that there's an output NB
-        transform_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'transform_*.ipynb' ) )
+        # Check that there are output files
+        output_files = [
+            ( 'counts', 'counts.categories.csv', ),
+            ( 'counts', 'counts.press_types.csv', ),
+            ( 'counts', 'counts.research_topics.csv', ),
+            ( 'press.csv', ),
+            ( 'press.exploded.csv', ),
+        ]
+        for output_file in output_files:
+            output_fp = os.path.join( self.temp_dirs['processed_data_dir'], *output_file )
+            assert os.path.isfile( output_fp )
+
+        # Check that there's an output NB in the logs
+        transform_fps = glob.glob( os.path.join( self.temp_dirs['logs_dir'], 'transform_*.ipynb' ) )
         assert len( transform_fps ) > 0
 
     ###############################################################################
 
     def test_transform_extra_files( self ):
-        '''Test that transform works'''
+        '''Test that transform works when there are multiple options.'''
 
         # Make an extra copy
         shutil.copy( self.news_data_fp, self.dup_news_data_fp )
 
         pipeline.transform( self.config_fp )
 
-        # Check that there's an output NB
-        transform_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'transform_*.ipynb' ) )
+        # Check that there are output files
+        output_files = [
+            ( 'counts', 'counts.categories.csv', ),
+            ( 'counts', 'counts.press_types.csv', ),
+            ( 'counts', 'counts.research_topics.csv', ),
+            ( 'press.csv', ),
+            ( 'press.exploded.csv', ),
+        ]
+        for output_file in output_files:
+            output_fp = os.path.join( self.temp_dirs['processed_data_dir'], *output_file )
+            assert os.path.isfile( output_fp )
+
+        # Check that there's an output NB in the logs
+        transform_fps = glob.glob( os.path.join( self.temp_dirs['logs_dir'], 'transform_*.ipynb' ) )
         assert len( transform_fps ) > 0
 
     ###############################################################################
