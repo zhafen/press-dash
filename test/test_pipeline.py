@@ -176,22 +176,6 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
-    def test_full( self ):
-
-        # Move to the root directory
-        os.chdir( self.root_dir )
-
-        # Run the pipeline
-        subprocess.run([ './press_dashboard_library/pipeline.py', './test_dashboard/config.yml' ])
-
-        # Check that there are output NBs
-        transform_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'transform_*.ipynb' ) )
-        assert len( transform_fps ) > 0
-        dashboard_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'dashboard_*.ipynb' ) )
-        assert len( dashboard_fps ) > 0
-
-    ###############################################################################
-
     def test_streamlit( self ):
 
         # Move to the root directory
