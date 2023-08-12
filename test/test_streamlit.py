@@ -68,7 +68,7 @@ class TestDashboard( unittest.TestCase ):
 
     ###############################################################################
 
-    def test_recategorize( self ):
+    def test_recategorize_data( self ):
 
         # Test Dataset
         data = {
@@ -79,10 +79,14 @@ class TestDashboard( unittest.TestCase ):
         exploded = pd.DataFrame(data)
 
         new_categories = {
-            'Northwestern Press (Inclusive)': [ 'Northwestern Press', 'CIERA Press', ],
+            'Northwestern Press (Inclusive)': "'Northwestern Press' | ( 'Northwestern Press' & 'CIERA Press')",
         }
 
-        exploded = st_lib.recategorize_data( exploded, new_categories )
+        exploded = st_lib.recategorize_data(
+            exploded,
+            group_by = 'Press Types',
+            new_categories = new_categories
+        )
 
         # Build up expected data
         expected = pd.DataFrame(
@@ -92,9 +96,9 @@ class TestDashboard( unittest.TestCase ):
                 'Year': [ 2015, 2014, 2015 ],
             },
         )
-        expected.set_index( 'Year', inplace=True )
+        expected.set_index( 'id', inplace=True )
 
-        pd.testing.assert_frame_equal( expected, exploded )
+        pd.testing.assert_series_equal( expected['Press Types'], exploded )
 
     ###############################################################################
 

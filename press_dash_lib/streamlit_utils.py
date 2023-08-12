@@ -1,3 +1,4 @@
+import ast
 import copy
 import numpy as np
 import os
@@ -5,6 +6,7 @@ import pandas as pd
 import re
 import streamlit as st
 import yaml
+from sympy import symbols, parse_expr
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -74,11 +76,42 @@ def load_exploded_data( config, group_by ):
 
 ################################################################################
 
-def recategorize_data( exploded, new_categories ):
+def recategorize_data( exploded, group_by, new_categories ):
 
-    # Build up the full 
+    # Get the formatted data used for the categories
+    dummies = pd.get_dummies( exploded[group_by] )
+    dummies['id'] = exploded['id']
+    dummies_grouped = dummies.groupby( 'id' )
+    bools = dummies_grouped.sum().astype( bool )
+    if bools.values.max() > 1:
+        raise ValueError(
+            'Categorization cannot proceed---' +
+            'At least one category shows up multiple times for a single ID.'
+        )
 
-    pass
+    # Setup return arr
+    base_categories = bools.columns
+    recategorized_dtype = np.array( new_categories.keys() ).dtype
+    recategorized = np.full( len(bools), fill_value='Other', dtype=recategorized_dtype )
+
+    # Do all the single-category entries
+    # These will be overridden if any are a subset of a new category
+    is_single_cat = dummies_grouped['id'].count() == 1
+    for base_category in base_categories:
+        recategorized[bools[base_category]&is_single_cat] = base_category
+
+    # Loop through and do the recategorization
+    for category_key, category_definition in new_categories.items():
+        # Replace the definition with something that can be evaluated
+        for base_category in base_categories:
+            category_definition = category_definition.replace(
+                "'{}'".format( base_category ),
+                "bools['{}']".format( base_category )
+            )
+        is_new_cat = eval( category_definition ).astype( 'bool' )
+        recategorized[is_new_cat] = category_key
+        
+    return pd.Series( recategorized, index=bools.index, name=group_by )
 
 ################################################################################
 
