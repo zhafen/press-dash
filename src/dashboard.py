@@ -42,9 +42,6 @@ df = st.cache_data( st_lib.load_original_data )( config )
 
 exploded, remaining_groupings, category_colors = st.cache_data( st_lib.load_exploded_data )( config, group_by )
 
-# DEBUG
-st.write(exploded.columns)
-
 ################################################################################
 # Filter and Count Data
 ################################################################################
@@ -59,12 +56,19 @@ data_kw = {
         index = 0,
         format_func = lambda x: x.lower(),
     ),
+    'recategorize': st.sidebar.checkbox( 'use combined categories (avoids double counting)', value=False ),
     'count_range': None,
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
     'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
 }
 if data_kw['weighting'] in alternate_weightings:
     count_max = int( df[data_kw['weighting']].replace('N/A', 0).max() )
+
+# Change categories
+exploded = st.cache_data( st_lib.recategorize_data )( exploded, config['new_categories'], data_kw['recategorize'] )
+
+# DEBUG
+st.write( exploded )
 
 # Setup range filters
 range_filters = {}

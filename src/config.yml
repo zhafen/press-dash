@@ -23,6 +23,15 @@ groupings:
   - Press Types
   - Categories
 
+# Custom categories
+new_categories:
+  Research Topics:
+    'Compact Objects': "'Life & Death of Stars' | 'Gravitational Waves & Multi-Messenger Astronomy' | 'Stellar Dynamics & Stellar Populations'"
+  Press Types:
+    'Northwestern Press (Inclusive)': "'Northwestern Press' | ( 'Northwestern Press' & 'CIERA Stories' )"
+  Categories:
+    'Research': "'Science' | 'Data Science & Computing'"
+
 # Filetree options
 input_dirname: raw_data
 output_dirname: processed_data

@@ -63,9 +63,6 @@ def load_exploded_data( config, group_by ):
     exploded[['Press Mentions', 'People Reached']] = exploded[['Press Mentions','People Reached']].fillna( value=0 )
     exploded.fillna( value='N/A', inplace=True )
 
-    # DEBUG
-    # exploded.set_index(remaining_groupings, inplace=True)
-
     # Colors for the categories
     color_palette = sns.color_palette( config['color_palette'] )
     category_colors = {}
@@ -76,13 +73,16 @@ def load_exploded_data( config, group_by ):
 
 ################################################################################
 
-def recategorize_data( exploded, new_categories ):
+def recategorize_data( exploded, new_categories, recategorize ):
+
+    if not recategorize:
+        return exploded
 
     for group_by, new_categories_per_grouping in new_categories.items():
         exploded[group_by] = recategorize_data_per_grouping(
             exploded,
             group_by,
-            new_categories_per_grouping
+            copy.deepcopy( new_categories_per_grouping ),
         )
 
     return exploded
