@@ -19,13 +19,14 @@ class TestDashboardSetup( unittest.TestCase ):
         # Get filepath info
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
-        self.processed_dir = os.path.join( self.root_dir, 'test_data', 'processed' )
+        self.data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_complete', )
+        self.config_fp = os.path.join( self.data_dir, 'config.yml' )
 
     ###############################################################################
 
     def test_load_config( self ):
 
-        config = st_lib.load_config( os.path.join( self.root_dir, 'src', 'st_dashboard.py' ) )
+        config = st_lib.load_config( self.config_fp )
 
         assert config['color_palette'] == 'deep'
 
@@ -33,7 +34,8 @@ class TestDashboardSetup( unittest.TestCase ):
 
     def test_load_original_data( self ):
 
-        config = st_lib.load_config( os.path.join( self.root_dir, 'src', 'st_dashboard.py' ) )
+        config = st_lib.load_config( self.config_fp )
+
         df = st_lib.load_original_data( config )
 
         assert df.size > 0
@@ -44,7 +46,7 @@ class TestDashboardSetup( unittest.TestCase ):
 
         group_by = 'Research Topics'
 
-        config = st_lib.load_config( os.path.join( self.root_dir, 'src', 'st_dashboard.py' ) )
+        config = st_lib.load_config( os.path.join( self.root_dir, 'src', 'dashboard.py' ) )
         exploded, remaining_groupings, category_colors = st_lib.load_exploded_data( config, group_by )
 
         assert exploded.size > 0 
@@ -59,10 +61,11 @@ class TestDashboard( unittest.TestCase ):
         # Get filepath info
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
-        self.processed_dir = os.path.join( self.root_dir, 'test_data', 'processed' )
+        self.data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_complete', )
+        self.config_fp = os.path.join( self.data_dir, 'config.yml' )
 
         self.group_by = 'Research Topics'
-        self.config = st_lib.load_config( os.path.join( self.root_dir, 'src', 'st_dashboard.py' ) )
+        self.config = st_lib.load_config( self.config_fp )
         self.df = st_lib.load_original_data( self.config )
         self.exploded, self.remaining_groupings, self.category_colors = st_lib.load_exploded_data( self.config, self.group_by )
 
