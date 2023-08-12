@@ -61,6 +61,27 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
+    def check_processed_data_and_logs( self ):
+        '''This method is re-used a few times to ensure that the requested output is available.'''
+
+        # Check that there are output files
+        output_files = [
+            ( 'counts', 'counts.categories.csv', ),
+            ( 'counts', 'counts.press_types.csv', ),
+            ( 'counts', 'counts.research_topics.csv', ),
+            ( 'press.csv', ),
+            ( 'press.exploded.csv', ),
+        ]
+        for output_file in output_files:
+            output_fp = os.path.join( self.temp_dirs['processed_data_dir'], *output_file )
+            assert os.path.isfile( output_fp )
+
+        # Check that there's an output NB in the logs
+        transform_fps = glob.glob( os.path.join( self.temp_dirs['logs_dir'], 'transform*.py' ) )
+        assert len( transform_fps ) > 0
+
+    ###############################################################################
+
     def test_transform( self ):
         '''Test that the transform works.'''
 
@@ -91,21 +112,7 @@ class TestPipeline( unittest.TestCase ):
         )
         assert execution_subprocess_output.returncode == 0
 
-        # Check that there are output files
-        output_files = [
-            ( 'counts', 'counts.categories.csv', ),
-            ( 'counts', 'counts.press_types.csv', ),
-            ( 'counts', 'counts.research_topics.csv', ),
-            ( 'press.csv', ),
-            ( 'press.exploded.csv', ),
-        ]
-        for output_file in output_files:
-            output_fp = os.path.join( self.temp_dirs['processed_data_dir'], *output_file )
-            assert os.path.isfile( output_fp )
-
-        # Check that there's an output NB in the logs
-        transform_fps = glob.glob( os.path.join( self.temp_dirs['logs_dir'], 'transform*.py' ) )
-        assert len( transform_fps ) > 0
+        self.check_processed_data_and_logs()
 
     ###############################################################################
 
@@ -120,8 +127,6 @@ class TestPipeline( unittest.TestCase ):
 
         nb_fp = os.path.join( self.root_dir, 'src', 'transform.ipynb' )
         command = ' '.join( (
-            'cd',
-            '{};'.format( self.test_data_dir ),
             'jupyter',
             'nbconvert',
             '--to notebook',
@@ -133,27 +138,13 @@ class TestPipeline( unittest.TestCase ):
             command,
             shell = True,
             capture_output = True,
-            cwd = os.path.relpath( self.test_data_dir ),
+            cwd = self.test_data_dir,
         )
 
         # Ensure it ran successfully
         assert subprocess_output.returncode == 0
 
-        # Check that there are output files
-        output_files = [
-            ( 'counts', 'counts.categories.csv', ),
-            ( 'counts', 'counts.press_types.csv', ),
-            ( 'counts', 'counts.research_topics.csv', ),
-            ( 'press.csv', ),
-            ( 'press.exploded.csv', ),
-        ]
-        for output_file in output_files:
-            output_fp = os.path.join( self.temp_dirs['processed_data_dir'], *output_file )
-            assert os.path.isfile( output_fp )
-
-        # Check that there's an output NB in the logs
-        transform_fps = glob.glob( os.path.join( self.temp_dirs['logs_dir'], 'transform_*.ipynb' ) )
-        assert len( transform_fps ) > 0
+        self.check_processed_data_and_logs()
 
     ###############################################################################
 
@@ -168,14 +159,20 @@ class TestPipeline( unittest.TestCase ):
     ###############################################################################
 
     def test_pipeline( self ):
-        '''Test that dashboard is generated works'''
+        '''Test the pipeline script works.'''
 
-        pipeline.transform( self.config_fp )
-        pipeline.dashboard( self.config_fp )
+        command = ' '.join( (
+            os.path.join( self.root_dir, 'src', 'pipeline.sh' ),
+            self.config_fp,
+        ) )
+        subprocess_output = subprocess.run(
+            command,
+            shell = True,
+            capture_output = True,
+            cwd = self.test_data_dir,
+        )
 
-        # Check that there's an output NB
-        dashboard_fps = glob.glob( os.path.join( self.temp_dirs['dashboard'], 'dashboard_*.ipynb' ) )
-        assert len( dashboard_fps ) > 0
+        self.check_processed_data_and_logs()
 
     ###############################################################################
 
