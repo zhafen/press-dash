@@ -13,7 +13,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from press_dashboard_library import streamlit as st_lib
+from press_dash import streamlit as st_lib
 
 # DEBUG
 import importlib
