@@ -82,7 +82,7 @@ class TestDashboard( unittest.TestCase ):
             'Northwestern Press (Inclusive)': [ 'Northwestern Press', 'CIERA Press', ],
         }
 
-        exploded = st_lib.recategorize( exploded, new_categories )
+        exploded = st_lib.recategorize_data( exploded, new_categories )
 
         # Build up expected data
         expected = pd.DataFrame(

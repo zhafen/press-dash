@@ -74,6 +74,14 @@ def load_exploded_data( config, group_by ):
 
 ################################################################################
 
+def recategorize_data( exploded, new_categories ):
+
+    # Build up the full 
+
+    pass
+
+################################################################################
+
 # @st.cache_data
 def filter_data( exploded, selected_groups, search_str, range_filters ):
     '''Filter the data shown.'''
