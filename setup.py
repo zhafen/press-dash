@@ -24,9 +24,12 @@ setuptools.setup(
         'matplotlib',
         'seaborn',
         'jupyterlab',
+        'sympy',
         'nbconvert',
         'nbformat',
         'PyYAML',
         'streamlit',
+        'pytest',
+        'jupyter_contrib_nbextensions',
     ],
 )
