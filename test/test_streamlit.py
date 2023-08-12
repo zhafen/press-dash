@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import yaml
 
-from press_dash import streamlit_utils as st_lib
+from press_dash_lib import streamlit_utils as st_lib
 
 ###############################################################################
 
@@ -178,3 +178,15 @@ class TestDashboard( unittest.TestCase ):
         subselected.replace( 'N/A', 0, inplace=True )
         expected = subselected['Press Mentions'].sum()
         assert total.loc[test_year][0] == expected
+
+    ###############################################################################
+
+    # def test_count_one_tag_per_article( self ):
+
+    #     selected = self.exploded
+    #     weighting = 'Article Count'
+    #     category_priorities = []
+
+    #     counts, total = st_lib.count( selected, self.group_by, weighting )
+
+    #     assert False
