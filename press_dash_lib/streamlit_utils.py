@@ -76,7 +76,20 @@ def load_exploded_data( config, group_by ):
 
 ################################################################################
 
-def recategorize_data( exploded, group_by, new_categories ):
+def recategorize_data( exploded, new_categories ):
+
+    for group_by, new_categories_per_grouping in new_categories.items():
+        exploded[group_by] = recategorize_data_per_grouping(
+            exploded,
+            group_by,
+            new_categories_per_grouping
+        )
+
+    return exploded
+
+################################################################################
+
+def recategorize_data_per_grouping( exploded, group_by, new_categories_per_grouping ):
 
     # Get the formatted data used for the categories
     dummies = pd.get_dummies( exploded[group_by] )
@@ -91,7 +104,7 @@ def recategorize_data( exploded, group_by, new_categories ):
 
     # Setup return arr
     base_categories = bools.columns
-    recategorized_dtype = np.array( new_categories.keys() ).dtype
+    recategorized_dtype = np.array( new_categories_per_grouping.keys() ).dtype
     recategorized = np.full( len(bools), fill_value='Other', dtype=recategorized_dtype )
 
     # Do all the single-category entries
@@ -101,7 +114,7 @@ def recategorize_data( exploded, group_by, new_categories ):
         recategorized[bools[base_category]&is_single_cat] = base_category
 
     # Loop through and do the recategorization
-    for category_key, category_definition in new_categories.items():
+    for category_key, category_definition in new_categories_per_grouping.items():
         # Replace the definition with something that can be evaluated
         for base_category in base_categories:
             category_definition = category_definition.replace(

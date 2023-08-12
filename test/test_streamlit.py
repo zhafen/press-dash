@@ -82,10 +82,10 @@ class TestDashboard( unittest.TestCase ):
             'Northwestern Press (Inclusive)': "'Northwestern Press' | ( 'Northwestern Press' & 'CIERA Press')",
         }
 
-        exploded = st_lib.recategorize_data(
+        exploded = st_lib.recategorize_data_per_grouping(
             exploded,
             group_by = 'Press Types',
-            new_categories = new_categories
+            new_categories_per_grouping = new_categories,
         )
 
         # Build up expected data
