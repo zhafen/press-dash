@@ -68,7 +68,7 @@ class TestDashboard( unittest.TestCase ):
 
     ###############################################################################
 
-    def test_recategorize_data( self ):
+    def test_recategorize_data_per_group( self ):
 
         # Test Dataset
         data = {
@@ -99,6 +99,29 @@ class TestDashboard( unittest.TestCase ):
         expected.set_index( 'id', inplace=True )
 
         pd.testing.assert_series_equal( expected['Press Types'], exploded )
+
+    ###############################################################################
+
+    def test_recategorize_data( self ):
+
+        recategorized = st_lib.recategorize_data(
+            self.df,
+            self.exploded,
+            self.config['new_categories'],
+            True,
+        )
+
+        # Check that NU Press inclusive is right
+        group_by = 'Press Types'
+        expected = (
+            ( self.df[group_by] == 'CIERA Stories|Northwestern Press' ) |
+            ( self.df[group_by] == 'Northwestern Press|CIERA Stories' ) |
+            ( self.df[group_by] == 'Northwestern Press' )
+        )
+        np.testing.assert_allclose(
+            recategorized[group_by] == 'Northwestern Press (Inclusive)',
+            expected
+        )
 
     ###############################################################################
 

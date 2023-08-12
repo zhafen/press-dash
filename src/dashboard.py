@@ -67,9 +67,6 @@ if data_kw['weighting'] in alternate_weightings:
 # Change categories
 exploded = st.cache_data( st_lib.recategorize_data )( exploded, config['new_categories'], data_kw['recategorize'] )
 
-# DEBUG
-st.write( exploded )
-
 # Setup range filters
 range_filters = {}
 for column in [ 'Year', 'Press Mentions', 'People Reached' ]:
