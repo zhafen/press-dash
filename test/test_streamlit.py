@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import yaml
 
-from press_dash import streamlit as st_lib
+from press_dash import streamlit_utils as st_lib
 
 ###############################################################################
 
