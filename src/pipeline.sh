@@ -33,13 +33,12 @@ echo "Converting and executing notebooks..."
 for USER_NB in ${USER_NBS[@]}; do
     echo "    $USER_NB"
     USER_NB_BASENAME=$(basename $USER_NB)
-    (
-    jupyter nbconvert \
+    ( jupyter nbconvert \
         --to script \
         $(realpath $SRC_DIR/$USER_NB) \
         --output=${USER_NB_BASENAME/.ipynb/.$TIMESTAMP} \
-        --output-dir=$LOGS_DIR \
-    ) > $LOGS_DIR/$USER_NB_BASENAME.conversion.txt
+        --output-dir=$LOGS_DIR ) \
+        2> $LOGS_DIR/convert.${USER_NB_BASENAME/.ipynb/.$TIMESTAMP.err}
     echo 
 done
 
