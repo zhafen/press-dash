@@ -42,6 +42,9 @@ df = st.cache_data( st_lib.load_original_data )( config )
 
 exploded, remaining_groupings, category_colors = st.cache_data( st_lib.load_exploded_data )( config, group_by )
 
+# DEBUG
+st.write(exploded.columns)
+
 ################################################################################
 # Filter and Count Data
 ################################################################################

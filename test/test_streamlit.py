@@ -68,6 +68,36 @@ class TestDashboard( unittest.TestCase ):
 
     ###############################################################################
 
+    def test_recategorize( self ):
+
+        # Test Dataset
+        data = {
+            'id': [1, 1, 2, 2, 3],
+            'Press Types': [ 'Northwestern Press', 'CIERA Press', 'External Press', 'CIERA Press', 'CIERA Press'],
+            'Year': [ 2015, 2015, 2014, 2014, 2015 ],
+        }
+        exploded = pd.DataFrame(data)
+
+        new_categories = {
+            'Northwestern Press (Inclusive)': [ 'Northwestern Press', 'CIERA Press', ],
+        }
+
+        exploded = st_lib.recategorize( exploded, new_categories )
+
+        # Build up expected data
+        expected = pd.DataFrame(
+            data = {
+                'id': [ 1, 2, 3, ],
+                'Press Types': [ 'Northwestern Press (Inclusive)', 'Other', 'CIERA Press' ],
+                'Year': [ 2015, 2014, 2015 ],
+            },
+        )
+        expected.set_index( 'Year', inplace=True )
+
+        pd.testing.assert_frame_equal( expected, exploded )
+
+    ###############################################################################
+
     def test_filter_data( self ):
 
         search_str = ''
@@ -179,14 +209,3 @@ class TestDashboard( unittest.TestCase ):
         expected = subselected['Press Mentions'].sum()
         assert total.loc[test_year][0] == expected
 
-    ###############################################################################
-
-    # def test_count_one_tag_per_article( self ):
-
-    #     selected = self.exploded
-    #     weighting = 'Article Count'
-    #     category_priorities = []
-
-    #     counts, total = st_lib.count( selected, self.group_by, weighting )
-
-    #     assert False
