@@ -26,8 +26,8 @@ groupings:
 # Custom categories
 new_categories:
   Research Topics:
-    'Compact Objects and Byproducts': "'Life & Death of Stars' | 'Gravitational Waves & Multi-Messenger Astronomy' | 'Black Holes & Dead Stars'"
-    'Cosmological Populations': "('Galaxies & Cosmology' | 'Stellar Dynamics & Stellar Populations' )"
+    'Compact Objects': " only ('Life & Death of Stars' | 'Gravitational Waves & Multi-Messenger Astronomy' | 'Black Holes & Dead Stars' )"
+    'Cosmological Populations': "only ('Galaxies & Cosmology' | 'Stellar Dynamics & Stellar Populations' )"
   Press Types:
     'External Press (Inclusive)': "'External Press'"
     'Northwestern Press (Inclusive)': "'Northwestern Press' & ( not 'External Press' )"

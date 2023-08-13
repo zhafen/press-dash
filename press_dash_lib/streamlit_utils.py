@@ -115,18 +115,24 @@ def recategorize_data_per_grouping( exploded, group_by, new_categories_per_group
     # Loop through and do the recategorization
     for category_key, category_definition in new_categories_per_grouping.items():
         # Replace the definition with something that can be evaluated
+        not_included_cats = []
         for base_category in base_categories:
-            # # We require explicit inclusion of other categories
-            # if base_category not in category_definition:
-            #     category_definition = (
-            #         "(" + category_definition +
-            #         ") & np.invert( bools['{}'])".format( base_category )
-            #     )
-            #     continue
+            if base_category not in category_definition:
+                not_included_cats.append( base_category )
+                continue
             category_definition = category_definition.replace(
                 "'{}'".format( base_category ),
                 "row['{}']".format( base_category )
             )
+        # Handle the not-included categories
+        if 'only' in category_definition:
+            category_definition = (
+                '(' + category_definition + ') & ( not ( ' +
+                ' | '.join(
+                    [ "row['{}']".format( cat ) for cat in not_included_cats ]
+                ) + ' ) )'
+            )
+            category_definition = category_definition.replace( 'only', '' )
         is_new_cat = bools.apply( lambda row: eval( category_definition ), axis='columns' )
         recategorized[is_new_cat] = category_key
         

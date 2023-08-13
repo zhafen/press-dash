@@ -151,6 +151,19 @@ class TestDashboard( unittest.TestCase ):
             expected
         )
 
+        # Check that compact objects is right
+        group_by = 'Research Topics'
+        not_included_groups = [
+            'Stellar Dynamics & Stellar Populations',
+            'Exoplanets & The Solar System',
+            'Galaxies & Cosmology',
+            'N/A',
+        ]
+        for group in not_included_groups:
+            is_group = self.df[group_by].str.contains( group )
+            is_compact = recategorized[group_by] == 'Compact Objects'
+            assert ( is_group & is_compact ).sum() == 0
+
     ###############################################################################
 
     def test_filter_data( self ):
