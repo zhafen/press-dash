@@ -1,6 +1,7 @@
 import unittest
 
 import glob
+import fileinput
 import numpy as np
 import os
 import pandas as pd
@@ -20,7 +21,20 @@ class TestDashboardSetup( unittest.TestCase ):
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
         self.data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_complete', )
+        root_config_fp = os.path.join( self.root_dir, 'src', 'config.yml' )
         self.config_fp = os.path.join( self.data_dir, 'config.yml' )
+
+        # Copy and edit config
+        with open( root_config_fp, 'r' ) as f:
+            config_text = f.read()
+        config_text = config_text.replace( '../data', '.' )
+        config_text = config_text.replace( './', '')
+        with open( self.config_fp, 'w' ) as f:
+            f.write( config_text )
+
+    def tearDown( self ):
+        if os.path.isfile( self.config_fp ):
+            os.remove( self.config_fp )
 
     ###############################################################################
 
