@@ -94,6 +94,7 @@ def recategorize_data_per_grouping( exploded, group_by, new_categories_per_group
     dummies['id'] = exploded['id']
     dummies_grouped = dummies.groupby( 'id' )
     bools = dummies_grouped.sum().astype( bool )
+    n_cats = dummies_grouped['id'].count()
     if bools.values.max() > 1:
         raise ValueError(
             'Categorization cannot proceed---' +
@@ -114,7 +115,16 @@ def recategorize_data_per_grouping( exploded, group_by, new_categories_per_group
     # Loop through and do the recategorization
     for category_key, category_definition in new_categories_per_grouping.items():
         # Replace the definition with something that can be evaluated
+        category_definition = category_definition.replace( 'invert', 'np.invert' )
+        category_definition = category_definition.replace( 'xor', 'np.logical_xor' )
         for base_category in base_categories:
+            # We require explicit inclusion of other categories
+            if base_category not in category_definition:
+                category_definition = (
+                    "(" + category_definition +
+                    ") & np.invert( bools['{}'])".format( base_category )
+                )
+                continue
             category_definition = category_definition.replace(
                 "'{}'".format( base_category ),
                 "bools['{}']".format( base_category )

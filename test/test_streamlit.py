@@ -145,8 +145,9 @@ class TestDashboard( unittest.TestCase ):
             ( self.df[group_by] == 'Northwestern Press|CIERA Stories' ) |
             ( self.df[group_by] == 'Northwestern Press' )
         )
+        actual = recategorized[group_by] == 'Northwestern Press (Inclusive)'
         np.testing.assert_allclose(
-            recategorized[group_by] == 'Northwestern Press (Inclusive)',
+            actual,
             expected
         )
 
