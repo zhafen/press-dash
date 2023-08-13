@@ -60,12 +60,6 @@ def load_exploded_data( config, group_by ):
     exploded[['Press Mentions', 'People Reached']] = exploded[['Press Mentions','People Reached']].fillna( value=0 )
     exploded.fillna( value='N/A', inplace=True )
 
-    # Colors for the categories
-    color_palette = sns.color_palette( config['color_palette'] )
-    category_colors = {}
-    for i, category in enumerate( pd.unique( exploded[group_by] ) ):
-        category_colors[category] = color_palette[i]
-
     return exploded, remaining_groupings, category_colors
 
 ################################################################################
@@ -83,6 +77,7 @@ def recategorize_data( df, exploded, new_categories, recategorize ):
             copy.deepcopy( new_categories_per_grouping ),
         )
 
+    recategorized.reset_index( inplace=True )
     return recategorized
 
 ################################################################################

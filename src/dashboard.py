@@ -67,6 +67,12 @@ if data_kw['weighting'] in alternate_weightings:
 # Change categories
 exploded = st.cache_data( st_lib.recategorize_data )( df, exploded, config['new_categories'], data_kw['recategorize'] )
 
+# Colors for the categories
+color_palette = sns.color_palette( config['color_palette'] )
+category_colors = {}
+for i, category in enumerate( pd.unique( exploded[group_by] ) ):
+    category_colors[category] = color_palette[i]
+
 # Setup range filters
 range_filters = {}
 for column in [ 'Year', 'Press Mentions', 'People Reached' ]:
