@@ -118,13 +118,13 @@ def recategorize_data_per_grouping( exploded, group_by, new_categories_per_group
         category_definition = category_definition.replace( 'invert', 'np.invert' )
         category_definition = category_definition.replace( 'xor', 'np.logical_xor' )
         for base_category in base_categories:
-            # We require explicit inclusion of other categories
-            if base_category not in category_definition:
-                category_definition = (
-                    "(" + category_definition +
-                    ") & np.invert( bools['{}'])".format( base_category )
-                )
-                continue
+            # # We require explicit inclusion of other categories
+            # if base_category not in category_definition:
+            #     category_definition = (
+            #         "(" + category_definition +
+            #         ") & np.invert( bools['{}'])".format( base_category )
+            #     )
+            #     continue
             category_definition = category_definition.replace(
                 "'{}'".format( base_category ),
                 "bools['{}']".format( base_category )

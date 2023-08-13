@@ -29,7 +29,7 @@ new_categories:
     'Compact Objects': "'Life & Death of Stars' | 'Gravitational Waves & Multi-Messenger Astronomy' | 'Stellar Dynamics & Stellar Populations'"
   Press Types:
     'External Press': "'External Press'"
-    'Northwestern Press (Inclusive)': "'Northwestern Press' | ( 'Northwestern Press' & 'CIERA Stories' )"
+    'Northwestern Press (Inclusive)': "'Northwestern Press' & invert( 'External Press' )"
   Categories:
     'Research': "'Science' | 'Data Science & Computing'"
 
