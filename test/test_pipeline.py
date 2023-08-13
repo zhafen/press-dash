@@ -17,6 +17,7 @@ class TestPipeline( unittest.TestCase ):
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
         self.test_data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_raw_only' )
+        root_config_fp = os.path.join( self.root_dir, 'src', 'config.yml' )
         self.config_fp = os.path.join( self.test_data_dir, 'config.yml' )
         self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -34,6 +35,14 @@ class TestPipeline( unittest.TestCase ):
         self.news_data_fp = os.path.join( self.test_data_dir, 'raw_data', 'News_Report_2023-07-25.csv' )
         self.dup_news_data_fp = self.news_data_fp.replace( '07-25', 'null-null' )
 
+        # Copy and edit config
+        with open( root_config_fp, 'r' ) as f:
+            config_text = f.read()
+        config_text = config_text.replace( '../data', '.' )
+        config_text = config_text.replace( './', '')
+        with open( self.config_fp, 'w' ) as f:
+            f.write( config_text )
+
     ###############################################################################
 
     def tearDown( self ):
@@ -46,6 +55,9 @@ class TestPipeline( unittest.TestCase ):
 
         if os.path.exists( self.dup_news_data_fp ):
             os.remove( self.dup_news_data_fp )
+
+        if os.path.isfile( self.config_fp ):
+            os.remove( self.config_fp )
 
     ###############################################################################
 
