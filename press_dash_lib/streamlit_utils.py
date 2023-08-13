@@ -15,14 +15,14 @@ import seaborn as sns
 
 ################################################################################
 
-def load_config( dashboard_fp ):
+def load_config( config_fp ):
     '''Get the config. Do this only once.
     '''
 
     # Check if we're in the directory the script is in,
     # which should also be the directory the config is in.
     # If not, move into that directory
-    config_dir = os.path.dirname( dashboard_fp )
+    config_dir = os.path.dirname( config_fp )
     if os.getcwd() != config_dir:
         os.chdir( config_dir )
 

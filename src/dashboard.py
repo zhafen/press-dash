@@ -65,7 +65,7 @@ if data_kw['weighting'] in alternate_weightings:
     count_max = int( df[data_kw['weighting']].replace('N/A', 0).max() )
 
 # Change categories
-exploded = st.cache_data( st_lib.recategorize_data )( exploded, config['new_categories'], data_kw['recategorize'] )
+exploded = st.cache_data( st_lib.recategorize_data )( df, exploded, config['new_categories'], data_kw['recategorize'] )
 
 # Setup range filters
 range_filters = {}

@@ -11,6 +11,16 @@ import yaml
 
 from press_dash_lib import streamlit_utils as st_lib
 
+def copy_config( root_config_fp, config_fp ):
+
+        # Copy and edit config
+        with open( root_config_fp, 'r' ) as f:
+            config_text = f.read()
+        config_text = config_text.replace( '../data', '.' )
+        config_text = config_text.replace( './', '')
+        with open( config_fp, 'w' ) as f:
+            f.write( config_text )
+
 ###############################################################################
 
 class TestDashboardSetup( unittest.TestCase ):
@@ -23,14 +33,7 @@ class TestDashboardSetup( unittest.TestCase ):
         self.data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_complete', )
         root_config_fp = os.path.join( self.root_dir, 'src', 'config.yml' )
         self.config_fp = os.path.join( self.data_dir, 'config.yml' )
-
-        # Copy and edit config
-        with open( root_config_fp, 'r' ) as f:
-            config_text = f.read()
-        config_text = config_text.replace( '../data', '.' )
-        config_text = config_text.replace( './', '')
-        with open( self.config_fp, 'w' ) as f:
-            f.write( config_text )
+        copy_config( root_config_fp, self.config_fp )
 
     def tearDown( self ):
         if os.path.isfile( self.config_fp ):
@@ -76,12 +79,19 @@ class TestDashboard( unittest.TestCase ):
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
         self.data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_complete', )
+        root_config_fp = os.path.join( self.root_dir, 'src', 'config.yml' )
         self.config_fp = os.path.join( self.data_dir, 'config.yml' )
+
+        copy_config( root_config_fp, self.config_fp )
 
         self.group_by = 'Research Topics'
         self.config = st_lib.load_config( self.config_fp )
         self.df = st_lib.load_original_data( self.config )
         self.exploded, self.remaining_groupings, self.category_colors = st_lib.load_exploded_data( self.config, self.group_by )
+
+    def tearDown( self ):
+        if os.path.isfile( self.config_fp ):
+            os.remove( self.config_fp )
 
     ###############################################################################
 
