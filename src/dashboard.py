@@ -136,6 +136,7 @@ generic_plot_kw = {
     ),
     'category_colors': category_colors,
 }
+st.write( font_fps )
 
 # Sidebar figure tweaks
 st.sidebar.markdown( '## Counts Figure Settings' )
