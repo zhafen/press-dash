@@ -59,6 +59,11 @@ class TestPipeline( unittest.TestCase ):
         if os.path.isfile( self.config_fp ):
             os.remove( self.config_fp )
 
+        # Remove any notebooks if they exist
+        notebook_fps = glob.glob( os.path.join( self.test_data_dir, 'transform*.ipynb' ) )
+        for notebook_fp in notebook_fps:
+            os.remove( notebook_fp )
+
     ###############################################################################
 
     def test_parse_config( self ):
@@ -73,7 +78,7 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
-    def check_processed_data_and_logs( self ):
+    def check_processed_data_and_logs( self, ext='.py' ):
         '''This method is re-used a few times to ensure that the requested output is available.'''
 
         # Check that there are output files
@@ -89,7 +94,7 @@ class TestPipeline( unittest.TestCase ):
             assert os.path.isfile( output_fp )
 
         # Check that there's an output NB in the logs
-        transform_fps = glob.glob( os.path.join( self.temp_dirs['logs_dir'], 'transform*.py' ) )
+        transform_fps = glob.glob( os.path.join( self.temp_dirs['logs_dir'], 'transform*{}'.format( ext ) ) )
         assert len( transform_fps ) > 0
 
     ###############################################################################
@@ -117,7 +122,7 @@ class TestPipeline( unittest.TestCase ):
         assert conversion_subprocess_output.returncode == 0
 
         execution_subprocess_output = subprocess.run(
-            'python {}.py'.format( os.path.join( self.temp_dirs['logs_dir'], script_fn_base )),
+            'python {}.py'.format( os.path.join( self.temp_dirs['logs_dir'], script_fn_base ) ),
             shell = True,
             capture_output = True,
             cwd = self.test_data_dir,
@@ -128,21 +133,23 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
-    @unittest.skip( "This attempts to use nbconvert's --to notebook functionality, but that function does not work with a changing working directory." )
+    # @unittest.skip( "This attempts to use nbconvert's --to notebook functionality, but that function does not work with a changing working directory." )
     def test_transform_execute_as_nb( self ):
         '''Test that transform works when executing the notebook directly.
         This would be nice because it would create the script that was run, and show the results alongside it in NB format.
         '''
 
-        # Move to the config directory
+        # Move to the config directory and copy in the notebook
         os.chdir( self.test_data_dir )
-
         nb_fp = os.path.join( self.root_dir, 'src', 'transform.ipynb' )
+        copied_nb_fp = os.path.join( self.test_data_dir, 'transform.ipynb')
+        shutil.copy( nb_fp, copied_nb_fp )
+
         command = ' '.join( (
             'jupyter',
             'nbconvert',
             '--to notebook',
-            '--execute {}'.format( nb_fp ),
+            '--execute {}'.format( copied_nb_fp ),
             '--output=transform.{}.test.ipynb'.format( self.timestamp ),
             '--output-dir={}'.format( self.temp_dirs['logs_dir'] ),
         ) )
@@ -156,7 +163,7 @@ class TestPipeline( unittest.TestCase ):
         # Ensure it ran successfully
         assert subprocess_output.returncode == 0
 
-        self.check_processed_data_and_logs()
+        self.check_processed_data_and_logs( '.ipynb' )
 
     ###############################################################################
 
