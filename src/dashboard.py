@@ -118,9 +118,6 @@ st.header( 'Article Count per Year' )
 
 st.sidebar.markdown( '# Figure Settings' )
 
-# DEBUG
-# st.write( plt.rcParams['font.family'] )
-
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
 generic_plot_kw = {
     'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=9. ),
@@ -136,16 +133,21 @@ generic_plot_kw = {
 
 # Handle font selection
 ## Get all installed fonts
-font_fps = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
-fonts = [ os.path.splitext( os.path.basename( _ ) )[0] for _ in font_fps ]
-## Get the default font
-default_font = font_manager.FontProperties(family='sans serif')
-default_font_fp = font_manager.findfont( default_font )
-default_index = int( np.where( np.array( font_fps ) == default_font_fp )[0][0] )
-## Make the selection
-font_ind = st.sidebar.selectbox( 'Select font', np.arange( len( fonts ) ), index=default_index, format_func=lambda x: fonts[x] )
-font = font_manager.FontProperties( fname=font_fps[font_ind] )
-generic_plot_kw['font'] = font.get_name()
+original_font = copy.copy( plt.rcParams['font.family'] )[0]
+# This can be finicky, so we'll wrap it in a try/except
+try:
+    font_fps = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
+    fonts = [ os.path.splitext( os.path.basename( _ ) )[0] for _ in font_fps ]
+    ## Get the default font
+    default_font = font_manager.FontProperties(family='Sans Serif')
+    default_font_fp = font_manager.findfont( default_font )
+    default_index = int( np.where( np.array( font_fps ) == default_font_fp )[0][0] )
+    ## Make the selection
+    font_ind = st.sidebar.selectbox( 'Select font', np.arange( len( fonts ) ), index=default_index, format_func=lambda x: fonts[x] )
+    font = font_manager.FontProperties( fname=font_fps[font_ind] )
+    generic_plot_kw['font'] = font.get_name()
+except:
+    generic_plot_kw['font'] = original_font
 
 # Sidebar figure tweaks
 st.sidebar.markdown( '## Counts Figure Settings' )
