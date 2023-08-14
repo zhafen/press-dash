@@ -33,7 +33,8 @@ new_categories:
     'Northwestern Press (Inclusive)': "'Northwestern Press' & ( not 'External Press' )"
   Categories:
     'Research': "('Science' | 'Data Science & Computing') & ( not ( 'Education' | 'Outreach' ) )"
-    'Community': "('Education' | 'Outreach') & ( not ( 'Science' | 'Data Science & Computing' ) )"
+    'Outreach': "('Education' | 'Outreach' ) & ( not ( 'Science' | 'Data Science & Computing' ) )"
+    'Achievements & Events': "only ('Achievement' | 'Event' | 'Interdisciplinary')"
 
 # Filetree options
 input_dirname: raw_data

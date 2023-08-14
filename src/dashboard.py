@@ -43,7 +43,7 @@ df = st.cache_data( st_lib.load_original_data )( config )
 exploded, remaining_groupings = st.cache_data( st_lib.load_exploded_data )( config, group_by )
 
 ################################################################################
-# Filter and Count Data
+# Set up data settings and recategorize as needed
 ################################################################################
 
 # Sidebar data settings
@@ -56,7 +56,7 @@ data_kw = {
         index = 0,
         format_func = lambda x: x.lower(),
     ),
-    'recategorize': st.sidebar.checkbox( 'use combined categories (can avoid double counting)', value=False ),
+    'recategorize': st.sidebar.checkbox( 'use combined categories (avoids double counting)', value=False ),
     'count_range': None,
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
     'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
@@ -66,6 +66,10 @@ if data_kw['weighting'] in alternate_weightings:
 
 # Change categories
 exploded = st.cache_data( st_lib.recategorize_data )( df, exploded, config['new_categories'], data_kw['recategorize'] )
+
+################################################################################
+# Filter and Count Data
+################################################################################
 
 # Colors for the categories
 color_palette = sns.color_palette( config['color_palette'] )
