@@ -245,8 +245,8 @@ class TestDashboard( unittest.TestCase ):
             ( selected['Year'] == test_year ) &
             ( selected[self.group_by] == test_group )
         )]
-        subselected.drop_duplicates( subset='id', inplace=True )
-        subselected.replace( 'N/A', 0, inplace=True )
+        subselected = subselected.drop_duplicates( subset='id' )
+        subselected = subselected.replace( 'N/A', 0, )
         expected = subselected['Press Mentions'].sum()
         assert counts.loc[test_year,test_group] == expected
 
@@ -255,8 +255,8 @@ class TestDashboard( unittest.TestCase ):
         subselected = selected.loc[(
             ( selected['Year'] == test_year )
         )]
-        subselected.drop_duplicates( subset='id', inplace=True )
-        subselected.replace( 'N/A', 0, inplace=True )
+        subselected = subselected.drop_duplicates( subset='id' )
+        subselected = subselected.replace( 'N/A', 0, )
         expected = subselected['Press Mentions'].sum()
         assert total.loc[test_year][0] == expected
 
@@ -276,8 +276,8 @@ class TestDashboard( unittest.TestCase ):
             ( selected['Year'] == test_year ) &
             ( selected[self.group_by] == test_group )
         )]
-        subselected.drop_duplicates( subset='id', inplace=True )
-        subselected.replace( 'N/A', 0, inplace=True )
+        subselected = subselected.drop_duplicates( subset='id' )
+        subselected = subselected.replace( 'N/A', 0 )
         expected = subselected['Press Mentions'].sum()
         assert expected > 0
         assert counts.loc[test_year,test_group] == expected
@@ -287,8 +287,8 @@ class TestDashboard( unittest.TestCase ):
         subselected = selected.loc[(
             ( selected['Year'] == test_year )
         )]
-        subselected.drop_duplicates( subset='id', inplace=True )
-        subselected.replace( 'N/A', 0, inplace=True )
+        subselected = subselected.drop_duplicates( subset='id' )
+        subselected = subselected.replace( 'N/A', 0 )
         expected = subselected['Press Mentions'].sum()
         assert total.loc[test_year][0] == expected
 
