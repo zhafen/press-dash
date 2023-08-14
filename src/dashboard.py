@@ -7,6 +7,7 @@ import pandas as pd
 import re
 import yaml
 import streamlit as st
+import sys
 
 # Matplotlib imports
 import matplotlib
@@ -14,6 +15,9 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager
 import seaborn as sns
 
+src_dir = os.path.dirname( os.path.dirname( __file__ ) )
+if src_dir not in sys.path:
+    sys.path.append( src_dir )
 from press_dash_lib import streamlit_utils as st_lib
 
 # DEBUG
@@ -113,6 +117,9 @@ st.header( 'Article Count per Year' )
 ################################################################################
 
 st.sidebar.markdown( '# Figure Settings' )
+
+# DEBUG
+# st.write( plt.rcParams['font.family'] )
 
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
 font_fps = matplotlib.font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
