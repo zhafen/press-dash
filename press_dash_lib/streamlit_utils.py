@@ -275,8 +275,9 @@ def plot_counts( counts, total, plot_kw ):
 
 def plot_fractions( counts, stackplot_kw ):
 
-    sns.set_style( stackplot_kw['seaborn_style'] )
+    sns.set( font=stackplot_kw['font'], style=stackplot_kw['seaborn_style'] )
     plot_context = sns.plotting_context("notebook")
+
 
     if stackplot_kw['cumulative']:
         counts = counts.cumsum( axis='rows' )
