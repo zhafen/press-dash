@@ -29,6 +29,7 @@ setuptools.setup(
         'PyYAML',
         'streamlit',
         'pytest',
+        'ipython',
         'jupyter',
         'jupyterlab',
         'jupyter_contrib_nbextensions',
