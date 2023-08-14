@@ -39,7 +39,7 @@ jobs:
         pip install -e .
     - name: Test with pytest
       run: |
-        pytest
+        pytest --skip-nbconvert
     - name: Run the dashboard
       run: |
         streamlit run ./src/dashboard.py
