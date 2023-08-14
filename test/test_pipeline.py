@@ -3,6 +3,7 @@ import unittest
 import datetime
 import glob
 import os
+import pytest
 import shutil
 import subprocess
 import yaml
@@ -99,6 +100,7 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
+    @pytest.mark.nbconvert
     def test_transform( self ):
         '''Test that the transform works.'''
 
@@ -133,7 +135,7 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
-    # @unittest.skip( "This attempts to use nbconvert's --to notebook functionality, but that function does not work with a changing working directory." )
+    @pytest.mark.nbconvert
     def test_transform_execute_as_nb( self ):
         '''Test that transform works when executing the notebook directly.
         This would be nice because it would create the script that was run, and show the results alongside it in NB format.
@@ -167,6 +169,7 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
+    @pytest.mark.nbconvert
     def test_transform_extra_files( self ):
         '''Test that transform works when there are multiple options.'''
 
@@ -177,6 +180,7 @@ class TestPipeline( unittest.TestCase ):
 
     ###############################################################################
 
+    @pytest.mark.nbconvert
     def test_pipeline( self ):
         '''Test the pipeline script works.'''
 
