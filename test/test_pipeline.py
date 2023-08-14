@@ -191,7 +191,10 @@ class TestPipeline( unittest.TestCase ):
             cwd = self.test_data_dir,
         )
 
-        self.check_processed_data_and_logs()
+        # Ensure it ran successfully
+        assert subprocess_output.returncode == 0
+
+        self.check_processed_data_and_logs( '.ipynb' )
 
     ###############################################################################
 

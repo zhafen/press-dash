@@ -64,7 +64,7 @@ else
     # Clean up any temporary notebooks
     # (Created as a workaround to issues specifying execution directory)
     cleanup() {
-        if [ "$(pwd)" != "$SRC_DIR" ]; then
+        if [ "$CONFIG_DIR" != "$SRC_DIR" ]; then
             echo 'Cleaning up temporary notebooks...'
             for USER_NB in ${USER_NBS[@]}; do
                 rm -f $CONFIG_DIR/$(basename $USER_NB)
@@ -82,9 +82,11 @@ else
 
         # Copy in the notebook. This needs to be done because there's not
         # a good way to change directory for nbconvert execute.
+        echo "Considering copying..."
         COPIED_NB_FP=$CONFIG_DIR/$USER_NB_BASENAME
-        if [ "$(pwd)" != "$SRC_DIR" ]; then
-            cp $USER_NB $COPIED_NB_FP
+        if [ "$CONFIG_DIR" != "$SRC_DIR" ]; then
+            echo "Copying $USER_NB to $COPIED_NB_FP"
+            cp $SRC_DIR/$USER_NB $COPIED_NB_FP
         fi
 
         ( jupyter nbconvert \
