@@ -168,6 +168,7 @@ def count( selected, group_by, weighting ):
 
     # More-complicated alternative
     else:
+        # We keep one entry per ID and group. This is to avoid double-counting.
         selected_for_sum = selected.copy()
         selected_for_sum['id_and_group'] = selected['id'].astype( str ) + selected[group_by]
         selected_for_sum.drop_duplicates( subset='id_and_group', keep='first', inplace=True )
@@ -177,6 +178,7 @@ def count( selected, group_by, weighting ):
             columns=group_by,
             aggfunc='sum'
         )
+        # For total we only need one entry per ID.
         selected_for_sum.drop_duplicates( subset='id', keep='first', inplace=True )
         total = selected_for_sum.pivot_table(
             values=weighting,
