@@ -3,12 +3,12 @@ pandas
 openpyxl
 matplotlib
 seaborn
-jupyterlab
 sympy
 nbconvert
 nbformat
 PyYAML
 streamlit
 pytest
+jupyter
+jupyterlab
 jupyter_contrib_nbextensions
-
