@@ -203,7 +203,7 @@ def plot_counts( counts, total, plot_kw ):
     years = counts.index
     categories = counts.columns
 
-    sns.set_style( plot_kw['seaborn_style'] )
+    sns.set( font=plot_kw['font'], style=plot_kw['seaborn_style'] )
     plot_context = sns.plotting_context("notebook")
 
     fig = plt.figure( figsize=( plot_kw['fig_width'], plot_kw['fig_height'] ) )

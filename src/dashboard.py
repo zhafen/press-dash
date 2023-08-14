@@ -11,6 +11,7 @@ import streamlit as st
 # Matplotlib imports
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.font_manager
 import seaborn as sns
 
 from press_dash_lib import streamlit_utils as st_lib
@@ -56,7 +57,7 @@ data_kw = {
         index = 0,
         format_func = lambda x: x.lower(),
     ),
-    'recategorize': st.sidebar.checkbox( 'use combined categories (avoids double counting)', value=False ),
+    'recategorize': st.sidebar.checkbox( 'use combined categories (avoids double counting; edit in the config)', value=False ),
     'count_range': None,
     'show_total': st.sidebar.checkbox( 'show total article count per year', value=False ),
     'cumulative': st.sidebar.checkbox( 'use cumulative count', value=False ),
@@ -114,7 +115,10 @@ st.header( 'Article Count per Year' )
 st.sidebar.markdown( '# Figure Settings' )
 
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
+font_fps = matplotlib.font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
+fonts = [ os.path.splitext( os.path.basename( _ ) )[0] for _ in font_fps ]
 generic_plot_kw = {
+    'font': st.sidebar.selectbox( 'Select font', fonts, index=0 ),
     'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=9. ),
     'fig_height': st.sidebar.slider( 'figure height', 0.1*fig_height, 2.*fig_height, value=fig_height ),
     'font_scale': st.sidebar.slider( 'font scale', 0.1, 2.0, value=1. ),
