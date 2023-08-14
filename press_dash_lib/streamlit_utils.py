@@ -60,7 +60,7 @@ def load_exploded_data( config, group_by ):
     exploded[['Press Mentions', 'People Reached']] = exploded[['Press Mentions','People Reached']].fillna( value=0 )
     exploded.fillna( value='N/A', inplace=True )
 
-    return exploded, remaining_groupings, category_colors
+    return exploded, remaining_groupings
 
 ################################################################################
 
@@ -72,6 +72,7 @@ def recategorize_data( df, exploded, new_categories, recategorize ):
     recategorized = df.copy()
     for group_by, new_categories_per_grouping in new_categories.items():
         recategorized[group_by] = recategorize_data_per_grouping(
+            df,
             exploded,
             group_by,
             copy.deepcopy( new_categories_per_grouping ),
@@ -82,7 +83,7 @@ def recategorize_data( df, exploded, new_categories, recategorize ):
 
 ################################################################################
 
-def recategorize_data_per_grouping( exploded, group_by, new_categories_per_grouping ):
+def recategorize_data_per_grouping( df, exploded, group_by, new_categories_per_grouping ):
 
     # Get the formatted data used for the categories
     dummies = pd.get_dummies( exploded[group_by] )
@@ -103,9 +104,9 @@ def recategorize_data_per_grouping( exploded, group_by, new_categories_per_group
 
     # Do all the single-category entries
     # These will be overridden if any are a subset of a new category
-    is_single_cat = dummies_grouped['id'].count() == 1
     for base_category in base_categories:
-        recategorized[bools[base_category]&is_single_cat] = base_category
+        is_base_cat_only = ( df[group_by] == base_category ).values
+        recategorized[is_base_cat_only] = base_category
 
     # Loop through and do the recategorization
     for category_key, category_definition in new_categories_per_grouping.items():

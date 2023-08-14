@@ -64,7 +64,7 @@ class TestDashboardSetup( unittest.TestCase ):
         group_by = 'Research Topics'
 
         config = st_lib.load_config( os.path.join( self.root_dir, 'src', 'dashboard.py' ) )
-        exploded, remaining_groupings, category_colors = st_lib.load_exploded_data( config, group_by )
+        exploded, remaining_groupings = st_lib.load_exploded_data( config, group_by )
 
         assert exploded.size > 0 
 
@@ -87,7 +87,7 @@ class TestDashboard( unittest.TestCase ):
         self.group_by = 'Research Topics'
         self.config = st_lib.load_config( self.config_fp )
         self.df = st_lib.load_original_data( self.config )
-        self.exploded, self.remaining_groupings, self.category_colors = st_lib.load_exploded_data( self.config, self.group_by )
+        self.exploded, self.remaining_groupings = st_lib.load_exploded_data( self.config, self.group_by )
 
     def tearDown( self ):
         if os.path.isfile( self.config_fp ):
@@ -98,6 +98,12 @@ class TestDashboard( unittest.TestCase ):
     def test_recategorize_data_per_group( self ):
 
         # Test Dataset
+        data = {
+            'id': [1, 2, 3],
+            'Press Types': [ 'Northwestern Press|CIERA Press', 'External Press|CIERA Press', 'CIERA Press'],
+            'Year': [ 2015, 2014, 2015 ],
+        }
+        df = pd.DataFrame(data)
         data = {
             'id': [1, 1, 2, 2, 3],
             'Press Types': [ 'Northwestern Press', 'CIERA Press', 'External Press', 'CIERA Press', 'CIERA Press'],
@@ -110,6 +116,7 @@ class TestDashboard( unittest.TestCase ):
         }
 
         exploded = st_lib.recategorize_data_per_grouping(
+            df,
             exploded,
             group_by = 'Press Types',
             new_categories_per_grouping = new_categories,
@@ -162,7 +169,15 @@ class TestDashboard( unittest.TestCase ):
         for group in not_included_groups:
             is_group = self.df[group_by].str.contains( group )
             is_compact = recategorized[group_by] == 'Compact Objects'
-            assert ( is_group & is_compact ).sum() == 0
+            assert ( is_group.values & is_compact.values ).sum() == 0
+
+        # Check that Other is right
+        for group in pd.unique( self.exploded[group_by] ):
+            is_group = self.df[group_by] == group
+            is_other = recategorized[group_by] == 'Other'
+            is_bad = ( is_group.values & is_other.values )
+            n_matched = is_bad.sum()
+            assert n_matched == 0
 
     ###############################################################################
 
