@@ -12,7 +12,7 @@ import sys
 # Matplotlib imports
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.font_manager
+import matplotlib.font_manager as font_manager
 import seaborn as sns
 
 src_dir = os.path.dirname( os.path.dirname( __file__ ) )
@@ -122,10 +122,7 @@ st.sidebar.markdown( '# Figure Settings' )
 # st.write( plt.rcParams['font.family'] )
 
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
-font_fps = matplotlib.font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
-fonts = [ os.path.splitext( os.path.basename( _ ) )[0] for _ in font_fps ]
 generic_plot_kw = {
-    'font': st.sidebar.selectbox( 'Select font', fonts, index=0 ),
     'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=9. ),
     'fig_height': st.sidebar.slider( 'figure height', 0.1*fig_height, 2.*fig_height, value=fig_height ),
     'font_scale': st.sidebar.slider( 'font scale', 0.1, 2.0, value=1. ),
@@ -136,7 +133,19 @@ generic_plot_kw = {
     ),
     'category_colors': category_colors,
 }
-st.write( font_fps )
+
+# Handle font selection
+## Get all installed fonts
+font_fps = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
+fonts = [ os.path.splitext( os.path.basename( _ ) )[0] for _ in font_fps ]
+## Get the default font
+default_font = font_manager.FontProperties(family='sans serif')
+default_font_fp = font_manager.findfont( default_font )
+default_index = int( np.where( np.array( font_fps ) == default_font_fp )[0][0] )
+## Make the selection
+font_ind = st.sidebar.selectbox( 'Select font', np.arange( len( fonts ) ), index=default_index, format_func=lambda x: fonts[x] )
+font = font_manager.FontProperties( fname=font_fps[font_ind] )
+generic_plot_kw['font'] = font.get_name()
 
 # Sidebar figure tweaks
 st.sidebar.markdown( '## Counts Figure Settings' )
