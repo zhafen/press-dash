@@ -18,7 +18,7 @@ class TestPipeline( unittest.TestCase ):
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
         self.test_data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_raw_only' )
-        root_config_fp = os.path.join( self.root_dir, 'src', 'config.yml' )
+        root_config_fp = os.path.join( self.root_dir, 'config.yml' )
         self.config_fp = os.path.join( self.test_data_dir, 'config.yml' )
         self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -39,8 +39,8 @@ class TestPipeline( unittest.TestCase ):
         # Copy and edit config
         with open( root_config_fp, 'r' ) as f:
             config_text = f.read()
-        config_text = config_text.replace( '../data', '.' )
-        config_text = config_text.replace( './', '')
+        config_text = config_text.replace( 'data_dir: data', 'data_dir: .' )
+        config_text = config_text.replace( 'figure_dir: data/figures', 'figure_dir: figures' )
         with open( self.config_fp, 'w' ) as f:
             f.write( config_text )
 
