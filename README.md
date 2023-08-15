@@ -2,6 +2,9 @@
 
 [![Installation and Tests](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/installation_and_tests.yml/badge.svg)](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/installation_and_tests.yml)
 
+
+## Instructions
+
 ## How to Run
 
 ### 1. Install
