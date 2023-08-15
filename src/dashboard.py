@@ -132,10 +132,10 @@ generic_plot_kw = {
 }
 
 # Handle font selection
-## Get all installed fonts
 original_font = copy.copy( plt.rcParams['font.family'] )[0]
 # This can be finicky, so we'll wrap it in a try/except
 try:
+    ## Get all installed fonts
     font_fps = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
     fonts = [ os.path.splitext( os.path.basename( _ ) )[0] for _ in font_fps ]
     ## Get the default font
