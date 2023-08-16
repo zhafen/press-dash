@@ -7,9 +7,9 @@
 year_start: September 1
 
 # Location of the data relative to the config
-data_dir: data
+data_dir: ../data
 # Location of the figures relative to the config
-figure_dir: data/figures
+figure_dir: ../data/figures
 
 # Seaborn color palette to use. More options at https://seaborn.pydata.org/tutorial/color_palettes.html
 color_palette: deep

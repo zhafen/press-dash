@@ -16,8 +16,8 @@ def copy_config( root_config_fp, config_fp ):
         # Copy and edit config
         with open( root_config_fp, 'r' ) as f:
             config_text = f.read()
-        config_text = config_text.replace( 'data_dir: data', 'data_dir: .' )
-        config_text = config_text.replace( 'figure_dir: data/figures', 'figure_dir: figures' )
+        config_text = config_text.replace( '../data', '.' )
+        config_text = config_text.replace( './', '')
         with open( config_fp, 'w' ) as f:
             f.write( config_text )
 
@@ -31,7 +31,7 @@ class TestDashboardSetup( unittest.TestCase ):
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
         self.data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_complete', )
-        root_config_fp = os.path.join( self.root_dir, 'config.yml' )
+        root_config_fp = os.path.join( self.root_dir, 'src', 'config.yml' )
         self.config_fp = os.path.join( self.data_dir, 'config.yml' )
         copy_config( root_config_fp, self.config_fp )
 
@@ -63,7 +63,7 @@ class TestDashboardSetup( unittest.TestCase ):
 
         group_by = 'Research Topics'
 
-        config = st_lib.load_config( os.path.join( self.root_dir, 'config.yml' ) )
+        config = st_lib.load_config( os.path.join( self.root_dir, 'src', 'config.yml' ) )
         exploded = st_lib.load_exploded_data( config, group_by )
 
         assert exploded.size > 0 
@@ -79,7 +79,7 @@ class TestDashboard( unittest.TestCase ):
         test_dir = os.path.abspath( os.path.dirname( __file__ ) )
         self.root_dir = os.path.dirname( test_dir )
         self.data_dir = os.path.join( self.root_dir, 'test_data', 'test_data_complete', )
-        root_config_fp = os.path.join( self.root_dir, 'config.yml' )
+        root_config_fp = os.path.join( self.root_dir, 'src', 'config.yml' )
         self.config_fp = os.path.join( self.data_dir, 'config.yml' )
 
         copy_config( root_config_fp, self.config_fp )
