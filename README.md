@@ -45,9 +45,10 @@ If you do not have Python on your computer it is recommended you download and in
 
 With Python installed, 
 open the directory containing the code (the root directory) in your terminal or command prompt.
-If youre a mac user and you've never used a terminal or fommand prompt before
+If youre a mac user and you've never used a terminal or command prompt before
 you can do this by right clicking the extracted folder and selecting "New Terminal at Folder" ([more info](https://support.apple.com/guide/terminal/open-new-terminal-windows-and-tabs-trmlb20c7888/mac); [Windows Terminal is the windows equivalent](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands)).
-Once inside the root directory and in a terminal, run the command
+
+Once inside the root directory and in a terminal, you can install the code by executing the command
 ```
 pip install -e .
 ```
