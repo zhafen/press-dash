@@ -1,9 +1,18 @@
-# CIERA Press Dashboard
+# root-dash
 
-[![Installation and Tests](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/installation_and_tests.yml/badge.svg)](https://github.com/CIERA-Northwestern/press-dashboard/actions/workflows/installation_and_tests.yml)
+This is a template repository for creating a simple data-science dashboard for a userbase with widely-varying technical backgrounds.
+Data is processed using [Python notebooks](https://jupyter.org/) and then explored using [Streamlit](https://streamlit.io/).
+The template readme is below,
+with placeholder text bolded and/or marked by "<>".
+Throughout the repository, notes on template usage will be marked with "[**root-dash:** \<instructions>]".
+Before you edit the code it is recommended you go through the template readme yourself.
 
+# <**Title**>
 
-The CIERA press dashboard provides a way for interested individuals to explore data regarding articles published by, and about, individuals associated with the [Center for Interdisciplinary Exploration and Research in Astrophysics](https://ciera.northwestern.edu/) at [Northwestern University](https://www.northwestern.edu/).
+[![Installation and Tests](https://github.com/zhafen/root-dash/actions/workflows/installation_and_tests.yml/badge.svg)](https://github.com/zhafen/root-dash/actions/workflows/installation_and_tests.yml)
+> [**root-dash**: This button tracks the status of code tests for the repository. You need to replace the URLs in the markdown with your own URLs.]
+
+This <**data-science dashboard**> provides a way for interested individuals to explore data regarding <**your data source**>.
 
 Instructions are provided below for various levels of usage.
 Even if you have never edited code before, the goal of the instructions in [Level 1](#level-1-using-the-dashboard-on-your-computer) is for you to run the dashboard on your computer.
@@ -21,7 +30,7 @@ On the other end of things, if you are comfortable with routine use of git, code
 ## Level 0: Using the Dashboard Online
 
 The dashboard has a plethora of features that can be interacted with via a web interface.
-If the dashboard is currently live at [ciera-press.streamlit.app](https://ciera-press.streamlit.app), you can use the dashboard without any additional effort.
+If the dashboard is currently live at [<**streamlit app**>](https://root-dash.streamlit.app), you can use the dashboard without any additional effort.
 One of the main features is the application of filters and the ability to download the edited data and images.
 
 ## Level 1: Using the Dashboard on your Computer
@@ -36,7 +45,7 @@ The process for downloading the code is as follows:
 1. Click on the green "Code" button on [the GitHub repository](https://github.com/CIERA-Northwestern/press-dashboard), near the top of the page.
 2. Select "Download ZIP."
 3. Extract the downloaded ZIP file.
-4. Optional: Move the extracted folder (`press-dashboard-main`; referred to as the code's "root directory") to a more-permanent location.
+4. Optional: Move the extracted folder (`<repository-name>`; referred to as the code's "root directory") to a more-permanent location.
 
 ### Installing the Dashboard
 
@@ -128,7 +137,7 @@ This enables editing the streamlit script to be almost exactly like an ordinary 
 If you know how to make plots in Python, then you know how to make interactive plots with Streamlit.
 
 If you want to change the Streamlit dashboard, edit `src/dashboard.py`.
-Much of the Streamlit functionality is also encapsulated in utility functions inside the `press_dash_lib/` directory, particularly in `press_dash_lib/streamlit_utils.py`.
+Much of the Streamlit functionality is also encapsulated in utility functions inside the `<short name>_dash_lib/` directory, particularly in `<short name>_dash_lib/streamlit_utils.py`.
 Streamlit speeds up calculations by caching calls to functions.
 If a particular combination of arguments has been passed to the function
 (and the function is wrapped in the decorator `st.cache_data` or `st.cache_resource`)
@@ -143,7 +152,7 @@ This will enable you to share your edits as a pull request.
 ### Repository Structure
 The repository is structured as follows:
 ```
-press-dashboard-main/
+<root-directory>/
 │
 ├── README.md                  # Documentation for the project
 ├── __init__.py
@@ -160,11 +169,11 @@ press-dashboard-main/
 ├── requirements.txt           # List of project dependencies
 ├── data                       # Data storage directory
 │   ├── raw_data                # Raw data directory
-│   |   ├── News_Report_2023-07-25.csv     # Data downloaded from wordpress
-│   |   └── press_office.xlsx              # Data provided by the NU press office.
+│   |   ├── <your raw data>.csv 
+│   |   └── <your additional raw data>.xlsx
 │   └── processed_data          # Processed data directory
-│       ├── press.csv           # The raw data combined
-│       └── press.exploded.csv  # Reformatted to be one entry for each tag
+│       ├── <your processed data>.csv
+│       └── <your additional processed data>.csv
 ├── test                       # Test directory
 │   ├── __init__.py
 │   ├── test_pipeline.py        # Unit tests for data pipeline
