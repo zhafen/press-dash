@@ -4,8 +4,6 @@ import io
 import numpy as np
 import os
 import pandas as pd
-import re
-import yaml
 import streamlit as st
 import sys
 
@@ -15,12 +13,16 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as font_manager
 import seaborn as sns
 
+# Import the custom library.
+# This should typically be accessible post pip-installation
+# But we add it to the path because when hosted on the web that doesn't work necessarily.
 src_dir = os.path.dirname( os.path.dirname( __file__ ) )
 if src_dir not in sys.path:
     sys.path.append( src_dir )
 from press_dash_lib import streamlit_utils as st_lib
 
-# DEBUG
+# Streamlit works by repeatedly rerunning the code,
+# so if we want to propogate changes to the library we need to reload it.
 import importlib
 importlib.reload( st_lib )
 
@@ -28,32 +30,40 @@ importlib.reload( st_lib )
 # Script Setup
 ################################################################################
 
+# This must be the first streamlit command
 st.set_page_config(layout='wide')
 
+# Load the configuration
 config = st.cache_data( st_lib.load_config )( __file__ )
 
 ################################################################################
 # Load data
 ################################################################################
 
+# Set the title that shows up at the top of the dashboard
 st.title( 'Overview of CIERA Articles' )
 
 # User data selection
+# This is a dropdown menu, and whenever the user changes the selection
+# group_by is set to the new value they chose.
 group_by = st.selectbox( 'Select what you want to group the articles by:', config['groupings'] )
 
+# You can make sections with headers
 st.header( 'Data Filters' )
 
+# Once we have the group_by, we can load the data
 df = st.cache_data( st_lib.load_original_data )( config )
-
 exploded = st.cache_data( st_lib.load_exploded_data )( config, group_by )
 
 ################################################################################
 # Set up data settings and recategorize as needed
 ################################################################################
 
-# Sidebar data settings
-alternate_weightings = [ 'People Reached', 'Press Mentions' ]
 st.sidebar.markdown( '# Data Settings' )
+
+# Sidebar data settings
+# These are added to the sidebar by using st.sidebar instead of just st
+alternate_weightings = [ 'People Reached', 'Press Mentions' ]
 data_kw = {
     'weighting': st.sidebar.selectbox(
         'count type',
@@ -69,28 +79,22 @@ data_kw = {
 if data_kw['weighting'] in alternate_weightings:
     count_max = int( df[data_kw['weighting']].replace('N/A', 0).max() )
 
-# Change categories
+# Change categories if requested.
+# The new categories avoid double counting.
 exploded = st.cache_data( st_lib.recategorize_data )( df, exploded, config['new_categories'], data_kw['recategorize'] )
 
 ################################################################################
 # Filter and Count Data
 ################################################################################
 
-# Colors for the categories
-color_palette = sns.color_palette( config['color_palette'] )
-category_colors = {}
-for i, category in enumerate( pd.unique( exploded[group_by] ) ):
-    category_colors[category] = color_palette[i]
-
 # Setup range filters
 range_filters = {}
 for column in [ 'Year', 'Press Mentions', 'People Reached' ]:
     column_min, column_max = int( df[column].min() ), int( df[column].max() )
     range_filters[column] = st.sidebar.slider( column.lower(), column_min, column_max, value=[ column_min, column_max ] )
-
 data_kw.update( range_filters )
 
-# Look for matching strings
+# Set up search string
 search_str = st.text_input( 'Title search (case insensitive; not a smart search)' )
 
 # User selection for the categories to show
@@ -110,14 +114,15 @@ selected = st.cache_data( st_lib.filter_data )( exploded, selected_groups, searc
 counts, total = st.cache_data( st_lib.count )( selected, group_by, data_kw['weighting'] )
 categories = counts.columns
 
-st.header( 'Article Count per Year' )
-
 ################################################################################
-# Plot Counts
+# Generic Figure Settings
 ################################################################################
 
+# Sidebar section heading.
+# There is no sidebar header in streamlit, so we use a markdown header.
 st.sidebar.markdown( '# Figure Settings' )
 
+# Set up generic figure settings
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
 generic_plot_kw = {
     'fig_width': st.sidebar.slider( 'figure width', 0.1*fig_width, 2.*fig_width, value=9. ),
@@ -128,8 +133,14 @@ generic_plot_kw = {
         [ 'whitegrid', 'white', 'darkgrid', 'dark', 'ticks', ],
         index = 0,
     ),
-    'category_colors': category_colors,
 }
+
+# The colors for the categories
+color_palette = sns.color_palette( config['color_palette'] )
+category_colors = {}
+for i, category in enumerate( pd.unique( exploded[group_by] ) ):
+    category_colors[category] = color_palette[i]
+generic_plot_kw['category_colors'] = category_colors
 
 # Handle font selection
 original_font = copy.copy( plt.rcParams['font.family'] )[0]
@@ -149,6 +160,12 @@ try:
 except:
     generic_plot_kw['font'] = original_font
 
+################################################################################
+# Plot Counts
+################################################################################
+
+st.header( '{} per Year'.format( data_kw['weighting'] ) )
+
 # Sidebar figure tweaks
 st.sidebar.markdown( '## Counts Figure Settings' )
 if data_kw['cumulative']:
@@ -156,6 +173,7 @@ if data_kw['cumulative']:
 else:
     default_ymax = counts.values.max() * 1.05
 
+# Settings specific to the counts
 default_tick_spacing = int(np.ceil(default_ymax/30.))
 max_tick_spacing = int( default_ymax )
 plot_kw = {
@@ -168,14 +186,17 @@ plot_kw = {
     'legend_y': st.sidebar.slider( 'legend y', 0., 1.5, value=1. ),
 }
 
+# Pull in the other dictionaries
 plot_kw.update( generic_plot_kw )
 plot_kw.update( data_kw )
 
+# st.spinner provides a visual indicator that the data is loading
 with st.spinner():
     fig = st.cache_data( st_lib.plot_counts )( counts, total, plot_kw )
     st.pyplot( fig )
 
 # Add a download button for the image
+# The image is saved as PDF, enabling arbitrary resolution
 fn = 'counts.{}.pdf'.format( group_by.lower().replace( ' ', '_' ) )
 img = io.BytesIO()
 fig.savefig( img, format='pdf', bbox_inches='tight' )
@@ -190,6 +211,8 @@ st.download_button(
 # Sand/Stack Plot
 ################################################################################
 
+st.header( 'Fraction of Tags per Year' )
+
 # Sidebar figure tweaks
 st.sidebar.markdown( '## Fractions Figure Settings' )
 fig_width, fig_height = matplotlib.rcParams['figure.figsize']
@@ -197,10 +220,9 @@ stackplot_kw = {
     'horizontal_alignment': st.sidebar.selectbox( 'label alignment', [ 'right', 'left' ], index=0 ),
 }
 
+# Pull in the other dictionaries
 stackplot_kw.update( generic_plot_kw )
 stackplot_kw.update( data_kw )
-
-st.header( 'Fraction of Tags per Year' )
 
 with st.spinner():
     fig = st.cache_data( st_lib.plot_fractions )( counts, stackplot_kw )
@@ -216,12 +238,13 @@ st.download_button(
     file_name=fn,
     mime="image/pdf"
 )
-# 
 
 ################################################################################
 # Display Raw Data
 ################################################################################
 
+# The selected data is shown in a table,
+# so that the user can always see the raw data being plotted
 st.header( 'Selected Data' )
 with st.spinner():
     selected_entries = df.loc[pd.unique(selected['id'])]
