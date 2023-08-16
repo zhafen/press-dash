@@ -5,9 +5,18 @@
 
 The CIERA press dashboard provides a way for interested individuals to explore data regarding articles published by, and about, individuals associated with the [Center for Interdisciplinary Exploration and Research in Astrophysics](https://ciera.northwestern.edu/) at [Northwestern University](https://www.northwestern.edu/).
 
-The instructions below describe various levels of usage.
+Instructions are provided below for various levels of usage.
 Even if you have never edited code before, the goal of the instructions in [Level 1](#level-1-using-the-dashboard-on-your-computer) is for you to run the dashboard on your computer.
 On the other end of things, if you are comfortable with routine use of git, code testing, etc., then jump to [Level 4](#level-4-significant-customization-and-editing) to get an overview of how the dashboard works and what you might want to edit.
+
+## Table of Contents
+
+- [Level 0: Using the Dashboard Online](#level-0-using-the-dashboard-online)
+- [Level 1: Using the Dashboard on your Computer](#level-1-using-the-dashboard-on-your-computer)
+- [Level 2: Changing the Configuration and Data](#level-2-changing-the-configuration-and-data)
+- [Level 3: Making Some Edits to the Code](#level-3-making-some-edits-to-the-code)
+- [Level 4: Significant Customization and Editing](#level-4-significant-customization-and-editing)
+- [Level 5: Additional Features](#level-5-additional-features)
 
 ## Level 0: Using the Dashboard Online
 
