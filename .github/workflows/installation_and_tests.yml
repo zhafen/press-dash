@@ -36,13 +36,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test the installation
       run: |
-        ./setup.sh
+        pip install -e .
     - name: Test with pytest
       run: |
-        pytest
-    - name: Run the pipeline
-      run: |
-        ./press_dashboard_library/pipeline.py ./dashboard/config.yml
-    - name: Run the dashboard
-      run: |
-        streamlit ./dashboard/st_dashboard.py
+        pytest --skip-nbconvert

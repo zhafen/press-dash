@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="press_dashboard_library",
+    name="press_dash_lib",
     version="0.1",
     author="Zach Hafen-Saavedra",
     author_email="zachary.h.hafen@gmail.com",
@@ -23,10 +23,15 @@ setuptools.setup(
         'openpyxl',
         'matplotlib',
         'seaborn',
-        'jupyterlab',
+        'sympy',
         'nbconvert',
         'nbformat',
         'PyYAML',
         'streamlit',
+        'pytest',
+        'ipython',
+        'jupyter',
+        'jupyterlab',
+        'jupyter_contrib_nbextensions',
     ],
 )
