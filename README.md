@@ -128,7 +128,7 @@ This enables editing the streamlit script to be almost exactly like an ordinary 
 If you know how to make plots in Python, then you know how to make interactive plots with Streamlit.
 
 If you want to change the Streamlit dashboard, edit `src/dashboard.py`.
-Much of the Streamlit functionality is also encapsulated in utility functions inside the `datasci_dash/` directory, particularly in `datasci_dash/streamlit_utils.py`.
+Much of the Streamlit functionality is also encapsulated in utility functions inside the `press_dash_lib/` directory, particularly in `press_dash_lib/streamlit_utils.py`.
 Streamlit speeds up calculations by caching calls to functions.
 If a particular combination of arguments has been passed to the function
 (and the function is wrapped in the decorator `st.cache_data` or `st.cache_resource`)
