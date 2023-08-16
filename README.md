@@ -70,18 +70,15 @@ but changing the data or a subset of the options requires rerunning the data-pro
 
 ### Editing the Config
 
-Some options are only available in the `config.yml` file found in the main (root) directory.
+Some options are only available in the `config.yml` file found in the `src` directory (`./src/config.yml` if you are in the root directory).
 This can be edited with TextEdit (mac), Notepad (Windows), or your favorite code editor.
 
 ### Running the Data Pipeline
 
 To run the data-processing pipeline, while in the root directory run the following command in your terminal:
 ```
-./src/pipeline.sh ./config.yml
+./src/pipeline.sh ./src/config.yml
 ```
-
-You can change which configuration file the pipeline uses by replacing `./config.yml` in the previous line with the path to your alternative config, e.g., `~/Desktop/temporary_folder/config.yml`.
-However, it is important to keep the name of the config itself the same.
 
 ### Updating the Data
 
@@ -149,9 +146,9 @@ press-dashboard-main/
 │
 ├── README.md                  # Documentation for the project
 ├── __init__.py
-├── config.yml                 # Configuration file for the dashboard
 ├── src                        # Source code directory
 │   ├── __init__.py
+|   ├── config.yml              # Configuration file for the dashboard
 │   ├── dashboard.py            # Script for interactive dashboard
 │   ├── pipeline.sh             # Shell script for running data pipeline
 │   └── transform.ipynb         # Jupyter notebook for data transformation
