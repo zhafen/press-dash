@@ -64,7 +64,7 @@ class TestDashboardSetup( unittest.TestCase ):
         group_by = 'Research Topics'
 
         config = st_lib.load_config( os.path.join( self.root_dir, 'config.yml' ) )
-        exploded, remaining_groupings = st_lib.load_exploded_data( config, group_by )
+        exploded = st_lib.load_exploded_data( config, group_by )
 
         assert exploded.size > 0 
 
@@ -87,7 +87,7 @@ class TestDashboard( unittest.TestCase ):
         self.group_by = 'Research Topics'
         self.config = st_lib.load_config( self.config_fp )
         self.df = st_lib.load_original_data( self.config )
-        self.exploded, self.remaining_groupings = st_lib.load_exploded_data( self.config, self.group_by )
+        self.exploded = st_lib.load_exploded_data( self.config, self.group_by )
 
     def tearDown( self ):
         if os.path.isfile( self.config_fp ):
