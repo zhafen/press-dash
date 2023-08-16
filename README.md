@@ -7,6 +7,9 @@ with placeholder text bolded and/or marked by "<>".
 Throughout the repository, notes on template usage will be marked with "[**root-dash:** \<instructions>]".
 Before you edit the code it is recommended you go through the template readme yourself.
 
+This template repository uses a blend of real and fake data.
+Do not use any analysis to attempt to draw insights about a dataset.
+
 # <**Title**>
 
 [![Installation and Tests](https://github.com/zhafen/root-dash/actions/workflows/installation_and_tests.yml/badge.svg)](https://github.com/zhafen/root-dash/actions/workflows/installation_and_tests.yml)
@@ -42,7 +45,7 @@ This is the minimal set of instructions to run and use the dashboard.
 The code lives in a git repository, but you don't have to know git to retrieve and use it.
 The process for downloading the code is as follows:
 
-1. Click on the green "Code" button on [the GitHub repository](https://github.com/CIERA-Northwestern/press-dashboard), near the top of the page.
+1. Click on the green "Code" button on [the GitHub repository](https://github.com/zhafen/root-dash), near the top of the page.
 2. Select "Download ZIP."
 3. Extract the downloaded ZIP file.
 4. Optional: Move the extracted folder (`<repository-name>`; referred to as the code's "root directory") to a more-permanent location.
@@ -114,7 +117,7 @@ There are many good tutorials available (e.g.
 [Git Basics](https://git-scm.com/book/en/v2/Getting-Started-Git-Basics)).
 For convenience, the main command you need to download the code with git is
 ```
-git clone git@github.com:CIERA-Northwestern/press-dashboard.git`
+git clone git@github.com:zhafen/root-dash.git`
 ```
 
 ### Editing the Pipeline
@@ -162,7 +165,7 @@ The repository is structured as follows:
 │   ├── dashboard.py            # Script for interactive dashboard
 │   ├── pipeline.sh             # Shell script for running data pipeline
 │   └── transform.ipynb         # Jupyter notebook for data transformation
-├── press_dash_lib              # Custom library directory
+├── root_dash_lib              # Custom library directory
 │   ├── __init__.py
 │   └── streamlit_utils.py      # Utility functions for the dashboard
 ├── setup.py                   # Script for packaging the project

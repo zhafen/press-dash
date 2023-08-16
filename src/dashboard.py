@@ -19,7 +19,7 @@ import seaborn as sns
 src_dir = os.path.dirname( os.path.dirname( __file__ ) )
 if src_dir not in sys.path:
     sys.path.append( src_dir )
-from press_dash_lib import streamlit_utils as st_lib
+from root_dash_lib import streamlit_utils as st_lib
 
 # Streamlit works by repeatedly rerunning the code,
 # so if we want to propogate changes to the library we need to reload it.
@@ -41,7 +41,7 @@ config = st.cache_data( st_lib.load_config )( __file__ )
 ################################################################################
 
 # Set the title that shows up at the top of the dashboard
-st.title( 'Overview of CIERA Articles' )
+st.title( 'Overview of Articles' )
 
 # User data selection
 # This is a dropdown menu, and whenever the user changes the selection

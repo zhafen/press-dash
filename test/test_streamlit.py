@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import yaml
 
-from press_dash_lib import streamlit_utils as st_lib
+from root_dash_lib import streamlit_utils as st_lib
 
 def copy_config( root_config_fp, config_fp ):
 
