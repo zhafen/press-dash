@@ -101,17 +101,31 @@ For convenience, the main command you need to download the code with git is
 git clone git@github.com:CIERA-Northwestern/press-dashboard.git`
 ```
 
-### Editing the Pipeline or Streamlit Script
+### Editing the Pipeline
 
 If you want to change how the data is processed, edit `src/transform.ipynb`.
-If you want to change the Streamlit dashboard, edit `src/dashboard.py`.
-Much of the Streamlit functionality is also encapsulated in utility functions inside the `datasci_dash/` directory, particularly in `datasci_dash/streamlit_utils.py`.
+The data-processing pipeline runs this notebook when you execute the bash script `./src/pipeline.sh`,
+and saves the output in the logs.
 It is recommended to use the config whenever possible for any new variables introduced.
 
 ### Adding to the Pipeline
 
 You can add additional notebooks to the data-processing pipeline.
 Just make the notebook, place it in the `src` dir, and add its name to the array at the top of `src/pipeline.sh`.
+
+### Editing the Streamlit Script
+
+The interactive dashboard is powered by [Streamlit](https://streamlit.io/), a Python library that enables easy interactive access.
+Streamlit is built on a very simple idea---to make something interactive, just rerun the script every time the user makes a change.
+This enables editing the streamlit script to be almost exactly like an ordinary Python script.
+If you know how to make plots in Python, then you know how to make interactive plots with Streamlit.
+
+If you want to change the Streamlit dashboard, edit `src/dashboard.py`.
+Much of the Streamlit functionality is also encapsulated in utility functions inside the `datasci_dash/` directory, particularly in `datasci_dash/streamlit_utils.py`.
+Streamlit speeds up calculations by caching calls to functions.
+If a particular combination of arguments has been passed to the function
+(and the function is wrapped in the decorator `st.cache_data` or `st.cache_resource`)
+then the results are stored in memory for easy access if the same arguments are passed again.
 
 ## Level 4: Significant Customization and Editing
 
