@@ -16,7 +16,15 @@ import seaborn as sns
 ################################################################################
 
 def load_config( config_fp ):
-    '''Get the config. Do this only once.
+    '''Get the config. This is done once per session.
+    The config directory is set as the working directory,
+    and the config must be named config.yml.
+
+    Args:
+        config_fp (str): The filepath to the config file.
+
+    Returns:
+        config (dict): The config dictionary.
     '''
 
     # Check if we're in the directory the script is in,
@@ -33,6 +41,14 @@ def load_config( config_fp ):
 ################################################################################
 
 def load_original_data( config ):
+    '''Load the merged-but-unprocessed data.
+
+    Args:
+        config (dict): The config dictionary.
+
+    Returns:
+        df (pd.DataFrame): The dataframe containing the original data.
+    '''
 
     output_dir = os.path.join( config['data_dir'], config['output_dirname'] )
     press_fp = os.path.join( output_dir, config['combined_filename'] )
@@ -46,9 +62,16 @@ def load_original_data( config ):
 ################################################################################
 
 def load_exploded_data( config, group_by ):
+    '''Load the exploded data. (Exploded means one row per category.)
+    https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.explode.html
 
-    remaining_groupings = copy.copy( config['groupings'] )
-    remaining_groupings.remove( group_by )
+    Args:
+        config (dict): The config dictionary.
+        group_by (str): The category to group the data by, e.g. 'Research Topics'.
+
+    Returns:
+        exploded (pd.DataFrame): The dataframe containing the exploded data.
+    '''
 
     base, ext = os.path.splitext( config['combined_filename'] )
     exploded_filename = '{}.exploded{}'.format( base, ext )
@@ -60,12 +83,28 @@ def load_exploded_data( config, group_by ):
     exploded[['Press Mentions', 'People Reached']] = exploded[['Press Mentions','People Reached']].fillna( value=0 )
     exploded.fillna( value='N/A', inplace=True )
 
-    return exploded, remaining_groupings
+    return exploded
 
 ################################################################################
 
-def recategorize_data( df, exploded, new_categories, recategorize ):
+def recategorize_data( df, exploded, new_categories, recategorize=True ):
+    '''Recategorize the data, i.e. combine existing categories into new ones.
+    The end result is one category per article, so no articles are double-counted.
+    However, if the new categories are ill-defined they can contradict one another
+    and lead to inconsistencies.
 
+    Args:
+        df (pd.DataFrame): The dataframe containing the original data.
+        exploded (pd.DataFrame): The dataframe containing the exploded data.
+        new_categories (dict): The new categories to use.
+        recategorize (bool): Whether to recategorize the data. Included for caching.
+
+    Returns:
+        recategorized (pd.DataFrame): The dataframe containing the recategorized data.
+            One entry per article.
+    '''
+
+    # We include the automatic return to help with data caching.
     if not recategorize:
         return exploded
 
@@ -84,6 +123,17 @@ def recategorize_data( df, exploded, new_categories, recategorize ):
 ################################################################################
 
 def recategorize_data_per_grouping( df, exploded, group_by, new_categories_per_grouping ):
+    '''The actual function doing most of the recategorizing.
+
+    Args:
+        df (pd.DataFrame): The dataframe containing the original data.
+        exploded (pd.DataFrame): The dataframe containing the exploded data.
+        group_by (str): The category to group the data by, e.g. 'Research Topics'. 
+        new_categories_per_grouping (dict): The new categories to use for this specific grouping.
+
+    Returns:
+        recategorized (pd.Series): The new categories.
+    '''
 
     # Get the formatted data used for the categories
     dummies = pd.get_dummies( exploded[group_by] )
@@ -137,7 +187,17 @@ def recategorize_data_per_grouping( df, exploded, group_by, new_categories_per_g
 ################################################################################
 
 def filter_data( exploded, selected_groups, search_str, range_filters ):
-    '''Filter the data shown.'''
+    '''Filter what data shows up in the dashboard.
+
+    Args:
+        exploded (pd.DataFrame): The dataframe containing the exploded data.
+        selected_groups (list): What categories to include.
+        search_str (str): What to search for in the title.
+        range_filters (dict of tuples): What numeric-data ranges to include.
+
+    Returns:
+        selected (pd.DataFrame): The dataframe containing the selected data.
+    '''
 
     # Search filter
     is_included = exploded['Title'].str.extract( '(' + search_str + ')', flags=re.IGNORECASE ).notna().values[:,0]
@@ -159,7 +219,18 @@ def filter_data( exploded, selected_groups, search_str, range_filters ):
 ################################################################################
 
 def count( selected, group_by, weighting ):
-    '''Count up stats.'''
+    '''Count up stats, e.g. number of articles per year per category or
+    the number of people reached per year per category.
+
+    Args:
+        selected (pd.DataFrame): The dataframe containing the selected data.
+        group_by (str): The category to group the data by, e.g. 'Research Topics'.
+        weighting (str): What to weight the counts by, e.g. 'Article Count' or 'People Reached'.
+
+    Returns:
+        counts (pd.DataFrame): The dataframe containing the counts per year per category.
+        total (pd.Series): The series containing the counts per year, overall.
+    '''
 
     # Nice simple case
     if weighting == 'Article Count':
@@ -195,6 +266,16 @@ def count( selected, group_by, weighting ):
 ################################################################################
 
 def plot_counts( counts, total, plot_kw ):
+    '''Function to plot the counts.
+
+    Args:
+        counts (pd.DataFrame): The dataframe containing the counts per year per category.
+        total (pd.Series): The series containing the counts per year, overall.
+        plot_kw (dict): The plotting keywords. Typically set things like font size, figure dimensions, etc.
+
+    Returns:
+        fig (matplotlib.figure.Figure): The figure containing the plot.
+    '''
 
     if plot_kw['cumulative']:
         counts = counts.cumsum( axis='rows' )
@@ -274,6 +355,15 @@ def plot_counts( counts, total, plot_kw ):
 ################################################################################
 
 def plot_fractions( counts, stackplot_kw ):
+    '''Function to plot the relative contribution of the categories.
+
+    Args:
+        counts (pd.DataFrame): The dataframe containing the counts per year per category.
+        stackplot_kw (dict): The plotting keywords. Typically set things like font size, figure dimensions, etc.
+
+    Returns:
+        fig (matplotlib.figure.Figure): The figure containing the plot.
+    '''
 
     sns.set( font=stackplot_kw['font'], style=stackplot_kw['seaborn_style'] )
     plot_context = sns.plotting_context("notebook")

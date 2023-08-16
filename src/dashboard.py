@@ -45,7 +45,7 @@ st.header( 'Data Filters' )
 
 df = st.cache_data( st_lib.load_original_data )( config )
 
-exploded, remaining_groupings = st.cache_data( st_lib.load_exploded_data )( config, group_by )
+exploded = st.cache_data( st_lib.load_exploded_data )( config, group_by )
 
 ################################################################################
 # Set up data settings and recategorize as needed
