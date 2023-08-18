@@ -2,18 +2,24 @@
 
 This is a template repository for creating a simple data-science dashboard for a userbase with widely-varying technical backgrounds.
 Data is processed using [Python notebooks](https://jupyter.org/) and then explored using [Streamlit](https://streamlit.io/).
-The template readme is below,
-with placeholder text bolded and/or marked by "<>".
-Throughout the repository, notes on template usage will be marked with "[**root-dash:** \<instructions>]".
-Before you edit the code it is recommended you go through the template readme yourself.
+This template repository uses a blend of real and fake data---any analysis contained within is for demonstration purposes only.
 
-This template repository uses a blend of real and fake data.
-Do not use any analysis to attempt to draw insights about a dataset.
+Steps to adapt the template as your own:
+1. **Fork** the repository.
+2. **Verify** functionality and understanding of the repository as is by going through the existing template readme below, including running tests.
+3. **Rename** `./root_dash_lib` to an appropriate name, e.g. `./revolutionary_dash_lib`.
+4. **Update** `./setup.py` with the new library name, author name, repository location, etc.
+5. **Modify** the modules in the directory formerly known as `root_dash_lib` for your use case. It is very likely you need to edit the renamed `root_dash_lib/data_utils`, but you may not need to update the other modules.
+6. **Update the README** (found below) and remove everything above the double lines (including this sentence).
+
+---
+---
 
 # <**Title**>
 
 [![Installation and Tests](https://github.com/zhafen/root-dash/actions/workflows/installation_and_tests.yml/badge.svg)](https://github.com/zhafen/root-dash/actions/workflows/installation_and_tests.yml)
-> [**root-dash**: This button tracks the status of code tests for the repository. You need to replace the URLs in the markdown with your own URLs.]
+
+<**root-dash**: The above button tracks the status of code tests for the repository. You need to replace the URLs in the markdown with your own URLs.>
 
 This <**data-science dashboard**> provides a way for interested individuals to explore data regarding <**your data source**>.
 
