@@ -94,7 +94,7 @@ class TestDashboardSetupPressData( unittest.TestCase ):
 ###############################################################################
 ###############################################################################
 
-class TestDashUtils( unittest.TestCase ):
+class TestDataUtils( unittest.TestCase ):
 
     def setUp( self ):
 
