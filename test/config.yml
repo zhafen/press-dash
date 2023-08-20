@@ -1,0 +1,55 @@
+###############################################################################
+# Options
+###############################################################################
+
+# What day of the year to start on.
+# Default is September 1st, start of the Northwestern Financial Year
+year_start: September 1
+
+# Location of the data relative to the config
+data_dir: ../data
+# Location of the figures relative to the config
+figure_dir: ../data/figures
+
+# Seaborn color palette to use. More options at https://seaborn.pydata.org/tutorial/color_palettes.html
+color_palette: deep
+
+# What to group by
+# If you add additional numeric columns to the data, you can specify them here and they will be added to the dashboard.
+groupings:
+  - Research Topics
+  - Press Types
+  - Categories
+
+###############################################################################
+# Advanced Options
+###############################################################################
+
+# Custom categories
+# Use boolean logic to define categories.
+# In addition to boolean logic, preceeding the definition with 'only' will restrict the category to only the tags that show up in the proceeding definition.
+# Any categories not defined here will be left as is if they are the sole tag, or added to an 'Other' category if they are one of multiple tags.
+new_categories:
+  # Press types are defined hierarchicaly.
+  Press Types:
+    'External Press (Inclusive)': "'External Press'" # Anything tagged as External Press will be included in this category
+    'Northwestern Press (Inclusive)': "'Northwestern Press' & ( not 'External Press' )" # Anything tagged with Northwestern Press but not External Press will be included in this category
+    # CIERA press is left undefined, so it defaults to showing up as usual, provided it is not also tagged with Northwestern Press or External Press.
+  # Research topics are defined as falling into one of three main categories: Exploding & Dead Stars, Astrophysical Populations, and Exoplanets & the Solar System.
+  Research Topics:
+    'Compact Objects': "only ('Life & Death of Stars' | 'Gravitational Waves & Multi-Messenger Astronomy' | 'Black Holes & Dead Stars' )"
+    'Cosmological Populations': "only ('Galaxies & Cosmology' | 'Stellar Dynamics & Stellar Populations' )"
+  # Article categories are grouped into research, outreach, and achievements & events, with research and outreach categorization superseeding achievements & events.
+  Categories:
+    'Research': "('Science' | 'Data Science & Computing') & ( not ( 'Education' | 'Outreach' ) )"
+    'Outreach': "('Education' | 'Outreach' ) & ( not ( 'Science' | 'Data Science & Computing' ) )"
+    'Achievements & Events': "only ('Achievement' | 'Event' | 'Interdisciplinary')"
+
+# Filetree options
+input_dirname: raw_data
+output_dirname: processed_data
+website_data_file_pattern: News_Report*.csv
+press_office_data_file_pattern: press_office*.xls*
+combined_filename: press.csv
+transform_nb_fp: default # Defaults to src/transform.ipynb
+dashboard_nb_fp: default # Defaults to src/dashboard.ipynb
