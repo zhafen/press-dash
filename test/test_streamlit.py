@@ -244,6 +244,25 @@ class TestDataUtils( unittest.TestCase ):
 
     ###############################################################################
 
+    def test_recategorize_data_rename( self ):
+
+        new_categories = self.config['new_categories']
+        new_categories['Also Research Topics [Research Topics]'] = {
+            'Compact Objects': "only ('Life & Death of Stars' | 'Gravitational Waves & Multi-Messenger Astronomy' | 'Black Holes & Dead Stars' )",
+            'Cosmological Populations': "only ('Galaxies & Cosmology' | 'Stellar Dynamics & Stellar Populations' )",
+        }
+        recategorized = data_utils.recategorize_data(
+            self.df,
+            new_categories,
+            True,
+        )
+
+        is_bad = recategorized['Also Research Topics'] != recategorized['Research Topics']
+        n_bad = is_bad.sum()
+        assert n_bad == 0
+
+    ###############################################################################
+
     def test_filter_data( self ):
 
         search_str = ''

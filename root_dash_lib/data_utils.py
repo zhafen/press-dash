@@ -48,13 +48,24 @@ def recategorize_data(
     recategorized.set_index( 'id', inplace=True )
 
     for groupby_column, new_categories_per_grouping in new_categories.items():
+
+        # Look for columns that are re-definitions of existing columns
+        # This regex looks for anything in front of anything else in brackets
+        search = re.findall( r'(.*?)\s\[(.+)\]', groupby_column )
+        if len( search ) == 0:
+            new_column = groupby_column
+        elif len( search ) == 1:
+            new_column, groupby_column = search[0]
+        else:
+            raise KeyError( 'New categories cannot have multiple sets of brackets.' )
+
         recategorized_groupby = recategorize_data_per_grouping(
             df,
             groupby_column,
             copy.deepcopy( new_categories_per_grouping ),
             combine_single_categories
         )
-        recategorized[groupby_column] = recategorized_groupby
+        recategorized[new_column] = recategorized_groupby
 
     recategorized.reset_index( inplace=True )
     return recategorized
