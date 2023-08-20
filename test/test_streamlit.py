@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import yaml
 
-from g_and_p_dash_lib import dash_utils, time_series_utils
+from root_dash_lib import dash_utils, data_utils, time_series_utils
 from .lib_for_tests import press_data_utils
 
 def copy_config( root_config_fp, config_fp ):
@@ -138,7 +138,7 @@ class TestDashUtils( unittest.TestCase ):
             'Northwestern Press (Inclusive)': "'Northwestern Press' | ( 'Northwestern Press' & 'CIERA Press')",
         }
 
-        df = dash_utils.recategorize_data_per_grouping(
+        df = data_utils.recategorize_data_per_grouping(
             df,
             groupby_column = 'Press Types',
             new_categories_per_grouping = new_categories,
@@ -161,7 +161,7 @@ class TestDashUtils( unittest.TestCase ):
     def test_recategorize_data_per_grouping_realistic( self ):
 
         group_by = 'Research Topics'
-        recategorized = dash_utils.recategorize_data_per_grouping(
+        recategorized = data_utils.recategorize_data_per_grouping(
             self.df,
             group_by,
             self.config['new_categories'][group_by],
@@ -197,7 +197,7 @@ class TestDashUtils( unittest.TestCase ):
 
     def test_recategorize_data( self ):
 
-        recategorized = dash_utils.recategorize_data(
+        recategorized = data_utils.recategorize_data(
             self.df,
             self.config['new_categories'],
             True,
@@ -257,7 +257,7 @@ class TestDashUtils( unittest.TestCase ):
             'Press Mentions': [ 0, 10 ], 
         }
 
-        selected = dash_utils.filter_data(
+        selected = data_utils.filter_data(
             self.df,
             search_str,
             'Title',

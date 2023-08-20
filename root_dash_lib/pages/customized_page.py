@@ -21,7 +21,7 @@ import seaborn as sns
 # if src_dir not in sys.path:
 #     sys.path.append( src_dir )
 # from g_and_p_dash_lib import dash_utils, data_utils, time_series_utils
-from .. import dash_utils, data_utils, time_series_utils
+from .. import dash_utils, time_series_utils, user_utils
 
 def add_tab(
         preprocessed_df,
@@ -167,7 +167,7 @@ def main( config_fp ):
 
     # Streamlit works by repeatedly rerunning the code,
     # so if we want to propogate changes to the library we need to reload it.
-    for module_to_reload in [ dash_utils, data_utils, time_series_utils ]:
+    for module_to_reload in [ dash_utils, user_utils, time_series_utils ]:
         importlib.reload( module_to_reload )
 
     ################################################################################
@@ -187,10 +187,10 @@ def main( config_fp ):
     # Load data
     ################################################################################
 
-    df = st.cache_data( data_utils.load_data )( config )
+    df = st.cache_data( user_utils.load_data )( config )
 
     # Do general preprocessing
-    preprocessed_df, config = st.cache_data( data_utils.preprocess )( df, config )
+    preprocessed_df, config = st.cache_data( user_utils.preprocess )( df, config )
 
     ################################################################################
     # Set up global settings

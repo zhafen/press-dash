@@ -1,79 +1,167 @@
-'''Data-handling functions.
-These functions are the most-likely to be changed when adapting this dashboard.
+'''General-purpose functions for relational data-analysis.
+Most functions should be useful for most relational datasets.
 '''
-import glob
+import copy
 import numpy as np
 import os
 import pandas as pd
+import re
 import streamlit as st
+import yaml
+
+import matplotlib
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as font_manager
+import seaborn as sns
 
 ################################################################################
 
-def load_data( config ):
-    '''Load the data.
+def recategorize_data(
+        df,
+        new_categories,
+        recategorize=True,
+        combine_single_categories=False
+    ):
+    '''Recategorize the data, i.e. combine existing categories into new ones.
+    The end result is one category per article, so no articles are double-counted.
+    However, if the new categories are ill-defined they can contradict one another
+    and lead to inconsistencies.
 
     Args:
-        config (dict): The config dictionary.
+        df (pd.DataFrame): The dataframe containing the original data.
+        new_categories (dict): The new categories to use.
+        recategorize (bool): Whether to recategorize the data. Included for caching.
 
     Returns:
-        df (pd.DataFrame): The dataframe containing the awards data.
+        recategorized (pd.DataFrame): The dataframe containing the recategorized data.
+            One entry per article.
     '''
 
-    # Get possible files
-    input_dir = os.path.join( config['data_dir'], config['input_dirname'] )
-    pattern = os.path.join( input_dir, config['data_file_pattern'] )
-    data_fps = glob.glob( pattern )
+    # We include the automatic return to help with data caching.
+    if not recategorize:
+        return df
+    
+    # Get the condensed data frame
+    # This is probably dropping stuff that shouldn't be dropped!!!!!!!
+    recategorized = df.drop_duplicates( subset='id', keep='first' )
+    recategorized.set_index( 'id', inplace=True )
 
-    # Select the most recent file
-    ind_selected = np.argmax([ os.path.getctime( _ ) for _ in data_fps ])
-    data_fp = data_fps[ind_selected]
+    for groupby_column, new_categories_per_grouping in new_categories.items():
+        recategorized_groupby = recategorize_data_per_grouping(
+            df,
+            groupby_column,
+            copy.deepcopy( new_categories_per_grouping ),
+            combine_single_categories
+        )
+        recategorized[groupby_column] = recategorized_groupby
 
-    df = pd.read_csv( data_fp, sep='\t', encoding='UTF-16' )
-
-    return df
+    recategorized.reset_index( inplace=True )
+    return recategorized
 
 ################################################################################
 
-def preprocess( df, config ):
-    '''Preprocess the data. Anything too time-intensive should be offloaded
-    to transform.ipynb.
+def recategorize_data_per_grouping(
+        df,
+        groupby_column,
+        new_categories_per_grouping,
+        combine_single_categories=False
+    ):
+    '''The actual function doing most of the recategorizing.
+
+    Args:
+        df (pd.DataFrame): The dataframe containing the original data.
+        groupby_column (str): The category to group the data by, e.g. 'Research Topics'. 
+        new_categories_per_grouping (dict): The new categories to use for this specific grouping.
+
+    Returns:
+        recategorized (pd.Series): The new categories.
     '''
 
-    # Set ID
-    df['id'] = df[config['primary_id_column']]
+    # Get the formatted data used for the categories
+    dummies = pd.get_dummies( df[groupby_column] )
+    dummies['id'] = df['id']
+    dummies_grouped = dummies.groupby( 'id' )
+    bools = dummies_grouped.sum() >= 1
+    n_cats = bools.sum( axis='columns' )
+    if bools.values.max() > 1:
+        raise ValueError(
+            'Categorization cannot proceed---' +
+            'At least one category shows up multiple times for a single ID.'
+        )
 
-    # Convert dates to years.
-    if 'date_columns' in config:
-        for date_column in config['date_columns']:
+    # Setup return arr
+    base_categories = bools.columns
+    recategorized_dtype = np.array( new_categories_per_grouping.keys() ).dtype
+    recategorized = np.full( len(bools), fill_value='Other', dtype=recategorized_dtype )
+    recategorized = pd.Series( recategorized, index=bools.index, name=groupby_column )
 
-            # Convert to datetime
-            df[date_column] = pd.to_datetime( df[date_column] )
+    if not combine_single_categories:
+        # Do all the single-category entries
+        # These will be overridden if any are a subset of a new category
+        bools_singles = bools.loc[n_cats == 1]
+        for base_category in base_categories:
+            is_base_cat = bools_singles[base_category].values
+            recategorized.loc[bools_singles.index[is_base_cat]] = base_category
 
-            # Get date bins
-            start_year = df[date_column].min().year - 1
-            end_year = df[date_column].max().year + 1
-            date_bins = pd.date_range(
-                '{} {}'.format( config['year_start'], start_year ),
-                pd.Timestamp.now() + pd.offsets.DateOffset( years=1 ),
-                freq = pd.offsets.DateOffset( years=1 ),
+    # Loop through and do the recategorization
+    for category_key, category_definition in new_categories_per_grouping.items():
+        # Replace the definition with something that can be evaluated
+        not_included_cats = []
+        for base_category in base_categories:
+            if base_category not in category_definition:
+                not_included_cats.append( base_category )
+                continue
+            category_definition = category_definition.replace(
+                "'{}'".format( base_category ),
+                "row['{}']".format( base_category )
             )
-            date_bin_labels = date_bins.year[:-1]
+        # Handle the not-included categories
+        if 'only' in category_definition:
+            category_definition = (
+                '(' + category_definition + ') & ( not ( ' +
+                ' | '.join(
+                    [ "row['{}']".format( cat ) for cat in not_included_cats ]
+                ) + ' ) )'
+            )
+            category_definition = category_definition.replace( 'only', '' )
+        is_new_cat = bools.apply( lambda row: eval( category_definition ), axis='columns' )
+        recategorized[is_new_cat] = category_key
+        
+    return recategorized
 
-            # Column name
-            year_column = date_column.replace( 'Date', 'Year' )
-            if 'year_columns' not in config:
-                config['year_columns'] = []
-            # To avoid overwriting the year column, we append a label to the end
-            if year_column in config['year_columns']:
-                year_column += ' (Custom)'
-            config['year_columns'].append( year_column )
+################################################################################
 
-            # Do the actual binning
-            df[year_column] = pd.cut( df[date_column], date_bins, labels=date_bin_labels ) 
+def filter_data( df, search_str, search_col, categorical_filters, numerical_filters ):
+    '''Filter what data shows up in the dashboard.
 
-    # Drop bad data (years earlier than 2000)
-    for year_column in config['year_columns']:
-        zero_inds = df.index[df[year_column] < 2000]
-        df = df.drop( zero_inds )
+    Args:
+        df (pd.DataFrame): The dataframe containing the data.
+        search_str (str): What to search the data for.
+        search_col (str): What column to search
+        categorical_filters (dict): How categories are filtered.
+        numerical_filters (dict): Ranges for numerical data filters
 
-    return df, config
+    Returns:
+        selected_df (pd.DataFrame): The dataframe containing the selected data.
+    '''
+
+    # # Search filter
+    if search_str != '':
+        is_included = df[search_col].str.extract( '(' + search_str + ')', flags=re.IGNORECASE ).notna().values[:,0]
+    else:
+        is_included = np.ones( len( df ), dtype=bool )
+
+    # Categories filter
+    for cat_filter_col, selected_cats in categorical_filters.items():
+        is_included = is_included & df[cat_filter_col].isin( selected_cats )
+
+    # Range filters
+    for num_filter_col, column_range in numerical_filters.items():
+        is_included = is_included & (
+            ( column_range[0] <= df[num_filter_col] ) &
+            ( df[num_filter_col] <= column_range[1] )
+        )
+
+    selected_df = df.loc[is_included]
+    return selected_df
