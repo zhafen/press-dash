@@ -44,7 +44,7 @@ def get_year( date, start_of_year='January 1', years_min=None, years_max=None ):
     date_bin_labels = date_bins.year[:-1]
 
     # The actual binning
-    years = pd.cut( date, date_bins, labels=date_bin_labels ) 
+    years = pd.cut( date, date_bins, labels=date_bin_labels ).astype( 'Int64' )
 
     return years
 
