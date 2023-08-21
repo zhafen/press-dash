@@ -6,7 +6,7 @@ page_title: 'Press Data'
 
 # What day of the year to start on.
 # Default is September 1st, start of the Northwestern Financial Year
-year_start: September 1
+start_of_year: September 1
 
 # Location of the data relative to the config
 data_dir: ../data

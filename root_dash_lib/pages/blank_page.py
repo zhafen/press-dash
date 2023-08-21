@@ -22,7 +22,7 @@ from root_dash_lib import user_utils, dash_utils, data_utils, time_series_utils
 
 # Streamlit works by repeatedly rerunning the code,
 # so if we want to propogate changes to the library we need to reload it.
-for module_to_reload in [ dash_utils, data_utils, time_series_utils ]:
+for module_to_reload in [ user_utils, dash_utils, data_utils, time_series_utils ]:
     importlib.reload( module_to_reload )
 
 def main( config_fp ):
@@ -67,11 +67,10 @@ def main( config_fp ):
     st.sidebar.markdown( '# Figure Settings' )
     global_plot_kw = dash_utils.setup_figure_settings( st.sidebar, color_palette=config['color_palette'] )
 
-    # Next, we add individual panels
     ################################################################################
-    st.header( 'CUSTOMIZE: YOUR HEADER' )
+    # Actual analysis
     ################################################################################
-    tag = 'PANEL' # CUSTOMIZE (used for distinguishing widgets)
+    tag = 'DEFAULT' # CUSTOMIZE (used for distinguishing widgets)
 
     # Copy the global settings as the basis for the local
     data_kw = copy.deepcopy( global_data_kw)
@@ -113,19 +112,6 @@ def main( config_fp ):
         key='{}:groupby_column'.format( tag ),
     )
 
-    st.markdown( '#### Other Settings' )
-    data_kw['recategorize'] = st.checkbox(
-        'use combined categories (avoids double counting; definitions can be edited in the config)',
-        value=True, # CUSTOMIZE
-        key='{}:recategorize'.format( tag ),
-    )
-    if data_kw['recategorize']:
-        data_kw['combine_single_categories'] = st.checkbox(
-            'group all undefined categories as "Other"',
-            value=False, # CUSTOMIZE
-            key='{}:combine_single_categories'.format( tag ),
-        )
-
     # Change categories if requested.
     # This needs to be done before the figure settings,
     # but should have no user-facing effect, so it can be outside general_st_col
@@ -137,12 +123,8 @@ def main( config_fp ):
     )
 
     # Import categorical filter defaults from the global settings, but only if both use the same recategorization settings
-    if data_kw['recategorize'] == global_data_kw['recategorize']:
-        categorical_filter_defaults = copy.deepcopy( global_categorical_filter_defaults )
-        numerical_filter_defaults = copy.deepcopy( global_numerical_filter_defaults )
-    else:
-        categorical_filter_defaults = {}
-        numerical_filter_defaults = {}
+    categorical_filter_defaults = copy.deepcopy( global_categorical_filter_defaults )
+    numerical_filter_defaults = copy.deepcopy( global_numerical_filter_defaults )
 
     st.markdown( '#### Filter Settings' )
     # categorical_filter_defaults = { 'Award Dept Name': [ 'CIERA', 'P&A',] } # CUSTOMIZE (example)
@@ -177,7 +159,7 @@ def main( config_fp ):
         data_kw['count_or_sum'],
     )
 
-    st.markdown( '#### Lineplot Settings' )
+    st.sidebar.markdown( '## Lineplot Settings' )
 
     plot_kw['category_colors'] = {
         category: global_plot_kw['color_palette'][i]
@@ -190,43 +172,43 @@ def main( config_fp ):
         data_kw['cumulative']
     )
     lineplot_kw.update({
-        'x_label': st.text_input(
+        'x_label': st.sidebar.text_input(
             'lineplot x label',
             value=data_kw['year_column'], # CUSTOMIZE
             key='{}:lineplot_x_label'.format( tag ),
         ),
-        'y_label': st.text_input(
+        'y_label': st.sidebar.text_input(
             'lineplot y label',
             value=data_kw['y_column'], # CUSTOMIZE
             key='{}:lineplot_y_label'.format( tag ),
         ),
-        'log_yscale': st.checkbox(
+        'log_yscale': st.sidebar.checkbox(
             'use log yscale',
             value=False,
             key='{}:lineplot_log_yscale'.format( tag ),
         ),
-        'linewidth': st.slider(
+        'linewidth': st.sidebar.slider(
             'linewidth',
             0.,
             10.,
             value=2.,
             key='{}:lineplot_linewidth'.format( tag ),
         ),
-        'marker_size': st.slider(
+        'marker_size': st.sidebar.slider(
             'marker size',
             0.,
             100.,
             value=30.,
             key='{}:lineplot_marker_size'.format( tag ),
         ),
-        'y_lim': st.slider(
+        'y_lim': st.sidebar.slider(
             'y limits',
             0.,
             default_ymax*2.,
             value=[0., default_ymax ],
             key='{}:lineplot_y_lim'.format( tag ),
         ),
-        'tick_spacing': st.number_input(
+        'tick_spacing': st.sidebar.number_input(
             'y tick spacing',
             value=default_tick_spacing,
             key='{}:lineplot_tick_spacing'.format( tag ),
@@ -235,17 +217,17 @@ def main( config_fp ):
     # Pull in the data dictionary (needed for caching)
     lineplot_kw.update( data_kw )
 
-    st.markdown( '#### Stackplot Settings' )
+    st.sidebar.markdown( '## Stackplot Settings' )
 
     stackplot_kw = copy.deepcopy( plot_kw )
     stackplot_kw.update({
-        'x_label': st.text_input(
-            'lineplot x label',
+        'x_label': st.sidebar.text_input(
+            'stackplot x label',
             value=data_kw['year_column'], # CUSTOMIZE
             key='{}:stackplot_x_label'.format( tag ),
         ),
-        'y_label': st.text_input(
-            'lineplot y label',
+        'y_label': st.sidebar.text_input(
+            'stackplot y label',
             value='Fraction of {} of "{}"'.format( data_kw['count_or_sum'], data_kw['y_column'] ), # CUSTOMIZE
             key='{}:stackplot_y_label'.format( tag ),
         ),
@@ -298,5 +280,6 @@ def main( config_fp ):
         st.download_button( **download_kw )
 
     # Check for the "STOP" environment variable
+    # This is a hack to stop the streamlit app from running
     if os.environ.get("STOP_STREAMLIT"):
         st.stop()
