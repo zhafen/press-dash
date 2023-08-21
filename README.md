@@ -9,7 +9,7 @@ Steps to adapt the template as your own:
 2. **Verify** functionality and understanding of the repository as is by going through the existing template readme below, including running tests.
 3. **Rename** `./root_dash_lib` to an appropriate name, e.g. `./revolutionary_dash_lib`.
 4. **Update** `./setup.py` with the new library name, author name, repository location, etc.
-5. **Modify** the modules in the directory formerly known as `root_dash_lib` for your use case. It is very likely you need to edit the renamed `root_dash_lib/data_utils`, but you may not need to update the other modules.
+5. **Modify** the modules in the directory formerly known as `root_dash_lib` for your use case. It is very likely you need to edit the renamed `root_dash_lib/user_utils`, but you may not need to update the other modules.
 6. **Update the README** (found below) and remove everything above the double lines (including this sentence).
 
 ---
@@ -30,8 +30,8 @@ On the other end of things, if you are comfortable with routine use of git, code
 ## Table of Contents
 
 - [Level 0: Using the Dashboard Online](#level-0-using-the-dashboard-online)
-- [Level 1: Using the Dashboard on your Computer](#level-1-using-the-dashboard-on-your-computer)
-- [Level 2: Changing the Configuration and Data](#level-2-changing-the-configuration-and-data)
+- [Level 1: Changing the Configuration and Data](#level-2-changing-the-configuration-and-data)
+- [Level 2: Using the Dashboard on your Computer](#level-1-using-the-dashboard-on-your-computer)
 - [Level 3: Making Some Edits to the Code](#level-3-making-some-edits-to-the-code)
 - [Level 4: Significant Customization and Editing](#level-4-significant-customization-and-editing)
 - [Level 5: Additional Features](#level-5-additional-features)
@@ -42,9 +42,27 @@ The dashboard has a plethora of features that can be interacted with via a web i
 If the dashboard is currently live at [<**streamlit app**>](https://root-dash.streamlit.app), you can use the dashboard without any additional effort.
 One of the main features is the application of filters and the ability to download the edited data and images.
 
-## Level 1: Using the Dashboard on your Computer
+## Level 1: Updating the Configuration and Data
 
-This is the minimal set of instructions to run and use the dashboard.
+For many applications the data is light-weight enough that you can do the pre-processing as part of running the dashboard.
+If the dashboard is also hosted on the web you can edit the configuration and data without ever needing to download anything.
+
+### Editing the Config
+
+Some options are only available in the `config.yml` file found in the `src` directory (`./src/config.yml` if you are in the root directory, i.e. [here](https://github.com/zhafen/root-dash/blob/main/src/config.yml)).
+You can edit this on github by clicking on the edit button in the upper right, provided you are logged in with an account that has the necessary permissions.
+Locally this can be edited with TextEdit (mac), Notepad (Windows), or your favorite code editor.
+
+### Updating the Data
+
+The raw data lives in [the `data/raw_data` folder](https://github.com/zhafen/root-dash/tree/main/data/raw_data).
+To update the data used, add and/or replace the data in this folder.
+You can do this on github by clicking the "Add file" button in the upper right hand corner.
+The pipeline will automatically select the most recent data.
+
+## Level 2: Using the Dashboard on your Computer
+
+If you need a private dashboard or you need to run more-intensive data processing you'll need to run the dashboard on your computer.
 
 ### Downloading the Code
 
@@ -80,31 +98,13 @@ streamlit run src/dashboard.py
 This will open the dashboard in a tab in your default browser.
 This does not require internet access.
 
-## Level 2: Updating the Configuration and Data
-
-The dashboard consists of two main components:
-the data-processing pipeline and the Streamlit script for creating interactive visualizations in the browser.
-We have so far used the Streamlit script (`dashboard.py`),
-but changing the data or a subset of the options requires rerunning the data-processing pipeline.
-
-### Editing the Config
-
-Some options are only available in the `config.yml` file found in the `src` directory (`./src/config.yml` if you are in the root directory).
-This can be edited with TextEdit (mac), Notepad (Windows), or your favorite code editor.
-
 ### Running the Data Pipeline
 
+<**Some analyses require additional data processing. This template comes with a built-in template for your own data pipeline.**>
 To run the data-processing pipeline, while in the root directory run the following command in your terminal:
 ```
 ./src/pipeline.sh ./src/config.yml
 ```
-
-### Updating the Data
-
-The raw data lives in the `data/raw_data` folder.
-To update the data used, add and/or replace the data in this folder.
-The pipeline will automatically select the most recent data.
-You will then need to run the data pipeline and the dashboard to see the updated data in the dashboard.
 
 ### Viewing the Logs
 
