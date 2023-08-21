@@ -18,7 +18,7 @@ import matplotlib.font_manager as font_manager
 import seaborn as sns
 
 # Import the custom library.
-from root_dash_lib import user_utils, dash_utils, data_utils, time_series_utils
+from press_dash_lib import user_utils, dash_utils, data_utils, time_series_utils
 
 # Streamlit works by repeatedly rerunning the code,
 # so if we want to propogate changes to the library we need to reload it.

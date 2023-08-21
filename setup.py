@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="root_dash_lib",
+    name="press_dash_lib",
     version="0.1",
-    author="Zach Hafen-Saavedra",
-    author_email="zachary.h.hafen@gmail.com",
-    description="template dashboard",
+    author="CIERA (Zach Hafen-Saavedra)",
+    author_email="ciera@northwestern.edu",
+    description="Dashboard for exploring and presenting press data related to CIERA.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/zhafen/root-dash",
+    url="https://github.com/CIERA-Northwestern/press-dash",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

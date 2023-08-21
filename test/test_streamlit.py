@@ -10,7 +10,7 @@ import streamlit as st
 import subprocess
 import yaml
 
-from root_dash_lib import dash_utils, data_utils, time_series_utils
+from press_dash_lib import dash_utils, data_utils, time_series_utils
 from .lib_for_tests import press_data_utils
 
 def copy_config( root_config_fp, config_fp ):
@@ -455,7 +455,7 @@ class TestStreamlit( unittest.TestCase ):
 
     def test_blank_page( self ):
 
-        import root_dash_lib.pages.blank_page as blank_page
+        import press_dash_lib.pages.blank_page as blank_page
 
         blank_page.main( self.config_fp )
 

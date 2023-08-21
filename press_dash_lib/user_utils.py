@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patheffects as path_effects
 import seaborn as sns
 
-from root_dash_lib import data_utils
+from press_dash_lib import data_utils
 
 ################################################################################
 
