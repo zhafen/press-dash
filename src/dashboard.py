@@ -11,7 +11,6 @@ root_dir = os.path.dirname( os.path.dirname( __file__ ) )
 if root_dir not in sys.path:
     sys.path.append( root_dir )
 
-
 # Call the main function.
 import importlib
 from press_dash_lib.pages import blank_page
