@@ -384,6 +384,7 @@ def view_time_series(
         stackplot_kw,
         filetag = None,
         tag = '',
+        df_tag = 'selected',
     ):
 
     if tag != '':
@@ -444,13 +445,26 @@ def view_time_series(
 
     elif view == 'data':
 
+        @st.cache_data
+        def view_data( df_tag ):
+            if df_tag == 'preprocessed':
+                st.markdown( 'This table contains all {} selected entries, prior to any recategorization.'.format( len( preprocessed_df ) ) )
+                show_df = preprocessed_df.loc[preprocessed_df['id'].isin( selected_df['id'] )]
+            elif df_tag == 'selected':
+                st.markdown( 'This table contains all {} selected entries.'.format( len( selected_df ) ) )
+                show_df = selected_df
+            elif df_tag == 'aggregated':
+                show_df = aggregated_df
+
+            st.write( show_df )
+
+            return show_df
+
         # The selected data is shown in a table,
         # so that the user can always see the raw data being plotted
         st.header( 'Selected Data' )
         with st.spinner():
-            original_and_selected_df = preprocessed_df.loc[preprocessed_df['id'].isin( selected_df['id'] )]
-            st.markdown( 'This table contains all {} selected entries.'.format( len( original_and_selected_df ) ) )
-            st.write( original_and_selected_df )
+            show_df = view_data( df_tag )
 
         # Add a download button for the data
         fn = 'data.{}.csv'.format( filetag )
@@ -464,5 +478,8 @@ def view_time_series(
             'key': 'data.{}'.format( filetag ),
             'key': '{}data'.format( tag ),
         }
+
+        # Return here because we're also return the show_df
+        return download_kw, show_df
 
     return download_kw
