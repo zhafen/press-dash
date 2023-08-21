@@ -256,8 +256,21 @@ class TestDataUtils( unittest.TestCase ):
             new_categories,
             True,
         )
-
         is_bad = recategorized['Also Research Topics'] != recategorized['Research Topics']
+        n_bad = is_bad.sum()
+        assert n_bad == 0
+
+        # Check that this still works for columns with similar names 
+        new_categories['Also Research Topics (with parenthesis) [Research Topics]'] = {
+            'Compact Objects': "only ('Life & Death of Stars' | 'Gravitational Waves & Multi-Messenger Astronomy' | 'Black Holes & Dead Stars' )",
+            'Cosmological Populations': "only ('Galaxies & Cosmology' | 'Stellar Dynamics & Stellar Populations' )",
+        }
+        recategorized = data_utils.recategorize_data(
+            self.df,
+            new_categories,
+            True,
+        )
+        is_bad = recategorized['Also Research Topics (with parenthesis)'] != recategorized['Research Topics']
         n_bad = is_bad.sum()
         assert n_bad == 0
 
