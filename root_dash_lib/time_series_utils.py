@@ -450,7 +450,7 @@ def view_time_series(
             if df_tag == 'preprocessed':
                 st.markdown( 'This table contains all {} selected entries, prior to any recategorization.'.format( len( preprocessed_df ) ) )
                 show_df = preprocessed_df.loc[preprocessed_df['id'].isin( selected_df['id'] )]
-            elif df_tag == 'selected':
+            elif df_tag == 'filtered':
                 st.markdown( 'This table contains all {} selected entries.'.format( len( selected_df ) ) )
                 show_df = selected_df
             elif df_tag == 'aggregated':

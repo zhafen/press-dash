@@ -1,78 +1,63 @@
-'''This file contains code the user is recommended to modify for their purposes.
-'''
-import glob
+import copy
 import numpy as np
 import os
 import pandas as pd
+import re
 import streamlit as st
+import yaml
 
-################################################################################
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as path_effects
+import seaborn as sns
 
-def load_data( config ):
-    '''Load the data.
+def load_original_data( config ):
+    '''Load the merged-but-unprocessed data.
 
     Args:
         config (dict): The config dictionary.
 
     Returns:
-        df (pd.DataFrame): The dataframe containing the awards data.
+        original_df (pd.DataFrame): The dataframe containing the original data.
     '''
 
-    # Get possible files
-    input_dir = os.path.join( config['data_dir'], config['input_dirname'] )
-    pattern = os.path.join( input_dir, config['data_file_pattern'] )
-    data_fps = glob.glob( pattern )
+    output_dir = os.path.join( config['data_dir'], config['output_dirname'] )
+    press_fp = os.path.join( output_dir, config['combined_filename'] )
+    original_df = pd.read_csv( press_fp, index_col=0 )
 
-    # Select the most recent file
-    ind_selected = np.argmax([ os.path.getctime( _ ) for _ in data_fps ])
-    data_fp = data_fps[ind_selected]
+    original_df[['Press Mentions', 'People Reached']] = original_df[['Press Mentions','People Reached']].fillna( value=0 )
+    original_df.fillna( value='N/A', inplace=True )
 
-    df = pd.read_csv( data_fp, sep='\t', encoding='UTF-16' )
+    return original_df
+
+################################################################################
+
+def load_data( config ):
+    '''Load the df data. (df means one row per category.)
+    https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.explode.html
+
+    Args:
+        config (dict): The config dictionary.
+        group_by (str): The category to group the data by, e.g. 'Research Topics'.
+
+    Returns:
+        df (pd.DataFrame): The dataframe containing the df data.
+    '''
+
+    base, ext = os.path.splitext( config['combined_filename'] )
+    df_filename = '{}.exploded{}'.format( base, ext )
+    output_dir = os.path.join( config['data_dir'], config['output_dirname'] )
+    df_fp = os.path.join( output_dir, df_filename )
+    df = pd.read_csv( df_fp )
 
     return df
 
 ################################################################################
 
-def preprocess( df, config ):
-    '''Preprocess the data. Anything too time-intensive should be offloaded
-    to transform.ipynb.
-    '''
+def preprocess_data( df, config ):
 
-    # Set ID
-    df['id'] = df[config['primary_id_column']]
-
-    # Convert dates to years.
-    if 'date_columns' in config:
-        for date_column in config['date_columns']:
-
-            # Convert to datetime
-            df[date_column] = pd.to_datetime( df[date_column] )
-
-            # Get date bins
-            start_year = df[date_column].min().year - 1
-            end_year = df[date_column].max().year + 1
-            date_bins = pd.date_range(
-                '{} {}'.format( config['year_start'], start_year ),
-                pd.Timestamp.now() + pd.offsets.DateOffset( years=1 ),
-                freq = pd.offsets.DateOffset( years=1 ),
-            )
-            date_bin_labels = date_bins.year[:-1]
-
-            # Column name
-            year_column = date_column.replace( 'Date', 'Year' )
-            if 'year_columns' not in config:
-                config['year_columns'] = []
-            # To avoid overwriting the year column, we append a label to the end
-            if year_column in config['year_columns']:
-                year_column += ' (Custom)'
-            config['year_columns'].append( year_column )
-
-            # Do the actual binning
-            df[year_column] = pd.cut( df[date_column], date_bins, labels=date_bin_labels ) 
-
-    # Drop bad data (years earlier than 2000)
-    for year_column in config['year_columns']:
-        zero_inds = df.index[df[year_column] < 2000]
-        df = df.drop( zero_inds )
+    # Handle NaNs and such
+    df[['Press Mentions', 'People Reached']] = df[['Press Mentions','People Reached']].fillna( value=0 )
+    df.fillna( value='N/A', inplace=True )
 
     return df, config

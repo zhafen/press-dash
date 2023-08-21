@@ -18,12 +18,7 @@ import matplotlib.font_manager as font_manager
 import seaborn as sns
 
 # Import the custom library.
-# This should typically be accessible post pip-installation
-# But we add it to the path because when hosted on the web that doesn't work necessarily.
-src_dir = os.path.dirname( os.path.dirname( __file__ ) )
-if src_dir not in sys.path:
-    sys.path.append( src_dir )
-from g_and_p_dash_lib import dash_utils, data_utils, time_series_utils
+from root_dash_lib import user_utils, dash_utils, data_utils, time_series_utils
 
 # Streamlit works by repeatedly rerunning the code,
 # so if we want to propogate changes to the library we need to reload it.
@@ -49,10 +44,10 @@ def main( config_fp ):
     # Load data
     ################################################################################
 
-    df = st.cache_data( data_utils.load_data )( config )
+    df = st.cache_data( user_utils.load_data )( config )
 
     # Do general preprocessing
-    preprocessed_df, config = st.cache_data( data_utils.preprocess )( df, config )
+    preprocessed_df, config = st.cache_data( user_utils.preprocess_data )( df, config )
 
     ################################################################################
     # Set up global settings
@@ -74,7 +69,7 @@ def main( config_fp ):
 
     # Next, we add individual panels
     ################################################################################
-    st.header( 'CUSTOMIZE: YOUR PANEL HEADER' )
+    st.header( 'CUSTOMIZE: YOUR HEADER' )
     ################################################################################
     tag = 'PANEL' # CUSTOMIZE (used for distinguishing widgets)
 
@@ -134,7 +129,7 @@ def main( config_fp ):
     # Change categories if requested.
     # This needs to be done before the figure settings,
     # but should have no user-facing effect, so it can be outside general_st_col
-    recategorized_df = st.cache_data( dash_utils.recategorize_data )(
+    recategorized_df = st.cache_data( data_utils.recategorize_data )(
         preprocessed_df,
         config['new_categories'],
         data_kw['recategorize'],
@@ -165,7 +160,7 @@ def main( config_fp ):
     )
 
     # Fiter the data
-    selected_df = st.cache_data( dash_utils.filter_data )(
+    selected_df = st.cache_data( data_utils.filter_data )(
         recategorized_df,
         search_str,
         search_col,
@@ -190,7 +185,7 @@ def main( config_fp ):
     }
 
     lineplot_kw = copy.deepcopy( plot_kw )
-    default_ymax, default_tick_spacing = dash_utils.get_range_and_spacing(
+    default_ymax, default_tick_spacing = dash_utils.get_tick_range_and_spacing(
         total,
         data_kw['cumulative']
     )
@@ -260,6 +255,18 @@ def main( config_fp ):
     stackplot_kw.update( data_kw )
 
     for view in [ 'lineplot', 'stackplot', 'data' ]:
+
+        # For datawe include additional options.
+        if view == 'data':
+            df_tag = st.radio(
+                'What data do you want to see?',
+                [ 'preprocessed', 'filtered', 'aggregated' ],
+                index=1,
+                horizontal=True,
+                key='{}:df_tag'.format( tag ),
+            )
+        else:
+            df_tag = 'selected'
         download_kw = st.cache_data( time_series_utils.view_time_series )(
             view,
             preprocessed_df,
@@ -270,5 +277,26 @@ def main( config_fp ):
             lineplot_kw,
             stackplot_kw,
             tag=tag,
+            df_tag=df_tag,
         )
+        if view == 'data':
+            download_kw, show_df = download_kw
+            if st.checkbox( 'View a subset?', value=False, key='{}:view_subset'.format( tag ) ):
+                try:
+                    columns_to_show = st.multiselect(
+                        'Which columns do you want to show?',
+                        show_df.columns,
+                        default=[ data_kw['year_column'], data_kw['y_column'], data_kw['groupby_column'] ],
+                    )
+                except:
+                    columns_to_show = st.multiselect(
+                        'Which columns do you want to show?',
+                        show_df.columns,
+                    )
+
+                st.write( show_df[ columns_to_show ] )
         st.download_button( **download_kw )
+
+    # Check for the "STOP" environment variable
+    if os.environ.get("STOP_STREAMLIT"):
+        st.stop()

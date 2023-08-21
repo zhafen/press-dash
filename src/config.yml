@@ -2,6 +2,8 @@
 # Options
 ###############################################################################
 
+page_title: 'Press Data'
+
 # What day of the year to start on.
 # Default is September 1st, start of the Northwestern Financial Year
 year_start: September 1
@@ -24,6 +26,27 @@ groupings:
 ###############################################################################
 # Advanced Options
 ###############################################################################
+
+# Classifications for different columns
+id_columns:
+  - id
+  - Title # Unique identifiers can also act as IDs
+weight_columns:
+  - Press Mentions
+  - People Reached
+date_columns:
+  - Date
+year_columns:
+  - Year
+categorical_columns:
+  - Research Topics
+  - Press Types
+  - Categories
+text_columns:
+  - Title
+  - Permalink
+  - Top Outlets
+  - Notes
 
 # Custom categories
 # Use boolean logic to define categories.
