@@ -233,7 +233,7 @@ def lineplot(
 
     ymax = lineplot_kw['y_lim'][1]
 
-    ax.set_xticks( years )
+    ax.set_xticks( years.astype( int ) )
     count_ticks = np.arange( 0, ymax, lineplot_kw['tick_spacing'] )
     ax.set_yticks( count_ticks )
 
@@ -317,7 +317,7 @@ def stackplot( aggregated_df, total, **stackplot_kw ):
     ax = plt.gca()
     
     stack = ax.stackplot(
-        years,
+        years.astype( int ),
         fractions.values.transpose(),
         linewidth = 0.3,
         colors = [ stackplot_kw['category_colors'][category_j] for category_j in categories ],
@@ -325,7 +325,7 @@ def stackplot( aggregated_df, total, **stackplot_kw ):
     )
     ax.set_xlim( years[0], years[-1] )
     ax.set_ylim( 0, 1. )
-    ax.set_xticks( years )
+    ax.set_xticks( years.astype( int ) )
     ax.set_ylabel( 'Fraction of Articles' )
 
     # Add labels
@@ -408,6 +408,7 @@ def view_time_series(
                 total,
                 **lineplot_kw
             )
+
             st.pyplot( fig )
         # Add a download button for the image
         # The image is saved as PDF, enabling arbitrary resolution
